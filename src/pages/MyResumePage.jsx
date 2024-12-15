@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ResumePreview from '../components/ResumePreview';
 import { useSelector } from 'react-redux';
@@ -7,6 +7,7 @@ import html2canvas from 'html2canvas'; // Import html2canvas
 const MyResumePage = () => {
   const navigate = useNavigate();
   const resumeRef = useRef(null);
+  const [isDownloaded, setIsDownloaded] = useState(false); // État pour suivre si le CV a été téléchargé
 
   // Utilisez useSelector pour récupérer les données du store Redux
   const resume = useSelector((state) => state.resume);
@@ -25,6 +26,14 @@ const MyResumePage = () => {
         link.href = imageURL;
         link.download = 'CV.png'; // Nom de l'image téléchargée
         link.click();
+
+        // Mettre à jour l'état pour afficher la notification
+        setIsDownloaded(true);
+
+        // Masquer la notification après 3 secondes
+        setTimeout(() => {
+          setIsDownloaded(false);
+        }, 3000);
       });
     }
   };
@@ -59,6 +68,13 @@ const MyResumePage = () => {
           Télécharger le CV  
         </button>
       </div>
+
+      {/* Notification de téléchargement réussi */}
+      {isDownloaded && (
+        <div className="fixed bottom-10 left-1/2 transform -translate-x-1/2 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg">
+          <p>Le CV a été téléchargé avec succès !</p>
+        </div>
+      )}
     </div>
   );
 };
