@@ -20,16 +20,19 @@ const HomePage = () => {
   };
 
   return (
-    <div>
-      <h1 className="text-center text-3xl my-6 font-bold">Choisissez un modèle</h1>
-      {/* Grid responsive pour 3 templates par ligne */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 p-4">
+    <div className="bg-gradient-to-r from-indigo-100 via-purple-100 to-pink-100 min-h-screen p-6">
+      <h1 className="text-center text-4xl sm:text-5xl font-bold text-gray-800 mb-8">
+        Choisissez un modèle
+      </h1>
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
         {templates.map((template) => (
-          <TemplateCard
+          <div
             key={template.id}
-            image={template.image}
+            className="transition-all transform hover:scale-105 hover:shadow-2xl rounded-lg overflow-hidden cursor-pointer"
             onClick={() => handleUseTemplate(template.id)}
-          />
+          >
+            <TemplateCard image={template.image} />
+          </div>
         ))}
       </div>
     </div>

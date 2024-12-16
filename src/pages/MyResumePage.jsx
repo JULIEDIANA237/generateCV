@@ -8,6 +8,7 @@ const MyResumePage = () => {
   const navigate = useNavigate();
   const resumeRef = useRef(null);
   const [isDownloaded, setIsDownloaded] = useState(false); // État pour suivre si le CV a été téléchargé
+  const [isDownloading, setIsDownloading] = useState(false); // État pour indiquer que le téléchargement est en cours
 
   // Utilisez useSelector pour récupérer les données du store Redux
   const resume = useSelector((state) => state.resume);
@@ -15,6 +16,9 @@ const MyResumePage = () => {
   const handleDownloadImage = () => {
     if (resumeRef.current) {
       const content = resumeRef.current;
+
+      // Affichage de l'indicateur de chargement
+      setIsDownloading(true);
 
       // Utilisation de html2canvas pour prendre une capture du composant
       html2canvas(content).then((canvas) => {
@@ -29,6 +33,7 @@ const MyResumePage = () => {
 
         // Mettre à jour l'état pour afficher la notification
         setIsDownloaded(true);
+        setIsDownloading(false);
 
         // Masquer la notification après 3 secondes
         setTimeout(() => {
@@ -39,9 +44,11 @@ const MyResumePage = () => {
   };
 
   return (
-    <div className="p-4">
-      <h1 className="text-3xl font-bold text-center mb-6">Aperçu de votre CV</h1>
-      <div className="flex justify-center mb-4">
+    <div className="bg-gradient-to-r from-blue-200 via-purple-200 to-pink-200 p-8 rounded-lg shadow-lg">
+      <h1 className="text-4xl sm:text-5xl font-bold text-center mb-8 text-gray-800">
+        Aperçu de votre CV
+      </h1>
+      <div className="flex justify-center mb-8">
         <div className="w-full max-w-4xl">
           <ResumePreview
             ref={resumeRef}
@@ -57,22 +64,23 @@ const MyResumePage = () => {
       <div className="flex flex-col sm:flex-row justify-center space-x-0 sm:space-x-4 space-y-4 sm:space-y-0">
         <button
           onClick={() => navigate('/details/1')}
-          className="px-6 py-2 bg-gray-300 rounded text-center"
+          className="px-6 py-3 bg-gray-300 rounded-lg text-center font-semibold hover:bg-gray-400 transition duration-200"
         >
           Retour
         </button>
         <button
           onClick={handleDownloadImage}
-          className="px-6 py-2 bg-blue-500 text-white rounded text-center"
+          className={`px-6 py-3 ${isDownloading ? 'bg-gray-400' : 'bg-blue-600'} text-white rounded-lg text-center font-semibold hover:${isDownloading ? 'bg-gray-400' : 'bg-blue-700'} transition duration-200`}
+          disabled={isDownloading} // Désactive le bouton pendant le téléchargement
         >
-          Télécharger le CV  
+          {isDownloading ? 'Téléchargement en cours...' : 'Télécharger le CV'}
         </button>
       </div>
 
       {/* Notification de téléchargement réussi */}
       {isDownloaded && (
-        <div className="fixed bottom-10 left-1/2 transform -translate-x-1/2 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg">
-          <p>Le CV a été téléchargé avec succès !</p>
+        <div className="fixed bottom-10 left-1/2 transform -translate-x-1/2 bg-green-500 text-white px-8 py-4 rounded-lg shadow-xl opacity-90 animate-bounce">
+          <p className="text-lg font-semibold">Le CV a été téléchargé avec succès !</p>
         </div>
       )}
     </div>
