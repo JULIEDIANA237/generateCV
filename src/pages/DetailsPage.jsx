@@ -7,13 +7,14 @@ import EducationForm from '../components/EducationForm';
 import SkillsForm from '../components/SkillsForm';
 import LanguagesForm from '../components/LanguagesForm';
 import InterestForm from '../components/InterestsForm';
-import { FaArrowLeft, FaArrowRight } from 'react-icons/fa';
+import { FaArrowLeft, FaArrowRight, FaBars } from 'react-icons/fa';
 
 const DetailsPage = () => {
   const [currentSection, setCurrentSection] = useState('Informations personnelles');
   const [completedSections, setCompletedSections] = useState([]);
   const [notification, setNotification] = useState(null);
   const [isTransitioning, setIsTransitioning] = useState(false);
+  
   const navigate = useNavigate();
 
   const sections = [
@@ -140,7 +141,7 @@ const DetailsPage = () => {
   };
 
   return (
-    <div className="flex flex-col md:flex-row bg-gradient-to-r from-blue-200 to-teal-300 min-h-screen">
+    <div className="flex flex-col md:flex-row   min-h-screen">
       {/* Notifications */}
       {notification && (
         <div
@@ -169,24 +170,28 @@ const DetailsPage = () => {
 
         {/* Navigation Buttons */}
         <div className="flex justify-between mt-6 flex-col sm:flex-row space-y-4 sm:space-y-0">
-          <button
-            disabled={currentSection === sections[0]}
-            onClick={previousSection}
-            className={`flex items-center justify-center px-6 py-3 rounded-lg shadow-md w-full sm:w-auto mb-2 sm:mb-0 
-              ${currentSection === sections[0] ? 'bg-gray-300 text-gray-500' : 'bg-gray-200 hover:bg-gray-400'}`}
-          >
-            <FaArrowLeft className="mr-2" /> Précédent
-          </button>
+  <button
+    disabled={currentSection === sections[0]}
+    onClick={previousSection}
+    className={`flex items-center justify-center px-4 py-2 sm:px-6 sm:py-3 rounded-lg shadow-md w-full sm:w-auto mb-2 sm:mb-0 
+      ${currentSection === sections[0] ? 'bg-gray-300 text-gray-500' : 'bg-gray-200 hover:bg-gray-400'}`}
+  >
+    <FaArrowLeft className="mr-2 h-4 w-4 sm:h-5 sm:w-5" /> {/* Taille des icônes réduite sur mobile */}
+    <span className="text-sm sm:text-base">Précédent</span> {/* Texte réduit sur mobile */}
+  </button>
 
-          <button
-            onClick={nextSection}
-            disabled={currentSection !== "Centres d'intérêt" && !completedSections.includes(currentSection)}
-            className="flex items-center justify-center px-6 py-3 bg-blue-600 text-white rounded-lg shadow-md hover:bg-blue-700 disabled:bg-gray-300 disabled:text-gray-500 w-full sm:w-auto"
-          >
-            {currentSection === "Centres d'intérêt" ? 'Prévisualiser le CV' : 'Suivant'}
-            <FaArrowRight className="ml-2" />
-          </button>
-        </div>
+  <button
+    onClick={nextSection}
+    disabled={currentSection !== "Centres d'intérêt" && !completedSections.includes(currentSection)}
+    className="flex items-center justify-center px-4 py-2 sm:px-6 sm:py-3 bg-blue-600 text-white rounded-lg shadow-md hover:bg-blue-700 disabled:bg-gray-300 disabled:text-gray-500 w-full sm:w-auto"
+  >
+    <span className="text-sm sm:text-base">
+      {currentSection === "Centres d'intérêt" ? 'Prévisualiser le CV' : 'Suivant'}
+    </span>
+    <FaArrowRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5" /> {/* Taille des icônes réduite sur mobile */}
+  </button>
+</div>
+
       </div>
     </div>
   );

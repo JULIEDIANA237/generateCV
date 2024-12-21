@@ -53,7 +53,7 @@ const Navbar = () => {
         >
           <li>
             <Link
-              to="/"
+              to="/modele"
               className="block sm:inline hover:text-blue-400 transition"
               onClick={() => setIsMenuOpen(false)}
             >
@@ -69,15 +69,7 @@ const Navbar = () => {
               Mon CV
             </Link>
           </li>
-          <li>
-            <Link
-              to="/about"
-              className="block sm:inline hover:text-blue-400 transition"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              À propos de nous
-            </Link>
-          </li>
+           
         </ul>
       </div>
     </nav>

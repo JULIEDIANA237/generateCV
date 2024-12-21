@@ -29,14 +29,14 @@ const Sidebar = ({ currentSection, onSelectSection }) => {
       }`}
     >
       <button
-        className="sm:hidden mb-4 bg-blue-500 text-white p-2 rounded hover:bg-blue-600"
+        className="sm:hidden mb-4 bg-orange-400  text-white p-2 rounded hover:bg-orange-400"
         onClick={toggleSidebar}
       >
         {isCollapsed ? '▶️' : '◀️'}
       </button>
 
       {!isCollapsed && (
-        <h2 className="text-xl font-bold text-center mb-4">Sections</h2>
+        <h2 className="text-orange-400 text-xl font-bold text-center mb-4">Sections</h2>
       )}
 
       <ul className="space-y-2">
@@ -45,7 +45,7 @@ const Sidebar = ({ currentSection, onSelectSection }) => {
             key={label}
             className={`p-2 cursor-pointer rounded flex items-center justify-between ${
               currentSection === label
-                ? 'bg-blue-500 text-white'
+                ? 'bg-orange-400 text-white'
                 : 'bg-white hover:bg-gray-300'
             }`}
             onClick={() => onSelectSection(label)}

@@ -24,7 +24,7 @@ const ResumePreview = forwardRef((props, ref) => {
           <p>Aucun modèle sélectionné.</p>
           <p>
             <a
-              href="/ "
+              href="/modele "
               className="text-blue-500 hover:underline"
             >
               Choisissez un modèle pour continuer.
