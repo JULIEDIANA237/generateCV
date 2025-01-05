@@ -12,7 +12,10 @@ const initialState = {
   },
   experiences: [], // Array of experience objects: { title, startDate, endDate, company, jobDescription }
   education: [], // Array of education objects: { title, startDate, endDate, school }
-  skills: [], // Array of skill objects: { title, content }
+  skills: [
+    { title: "HTML", level: 4 }, // Exemple avec un niveau (de 0 à 5)
+     
+  ],
   languages: [
     { title: "Anglais", level: "Courant" }, // Exemple de données par défaut
     { title: "Français", level: "Natif" },
@@ -23,6 +26,7 @@ const initialState = {
   ], // Array of interest objects: { title }
   selectedTemplate: null, // Ajout du modèle sélectionné
 };
+
 
 const resumeSlice = createSlice({
   name: 'resume',

@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Responsive CV</title>
+  <link rel="stylesheet" href="template3.css">
+</head>
+<body>
+  <div class="cv-container" id="cv-container">
+     
+      <!-- Profile Section -->
+      <section class="profile">
+        <img src="{{image}}" alt="Profile Picture">
+        <div class="profile-info">
+            <h1>{{firstName}} {{lastName}}</h1>
+            <p>{{title}}</p>
+        </div>
+        
+      </section>
+
+      <!-- Personal Information Section -->
+      <section class="personal-info">
+        <h3>Personal Information</h3>
+        <p><strong>Email:</strong> {{email}}</p>
+        <p><strong>Phone:</strong> {{phone}}</p>
+      </section>
+
+      <!-- Description Section -->
+      <section class="description">
+        <h3>About Me</h3>
+        <p>{{description}}</p>
+      </section>
+
+      <!-- Education Section -->
+      <section class="education">
+        <h3>Education</h3>
+        {{education}}
+      </section>
+
+      <!-- Experience Section -->
+      <section class="experience">
+        <h3>Experience</h3>
+        {{experiences}}
+      </section>
+
+       <!-- Skills Section -->
+       <section class="skills">
+        <h3>Skills</h3>
+        <ul>
+          {{skills}}
+        </ul>
+      </section>
+
+      <!-- Languages Section -->
+      <section class="languages">
+        <h3>Languages</h3>
+        <ul>
+          {{languages}}
+        </ul>
+      </section>
+
+      <!-- Interests Section -->
+      <section class="interests">
+        <h3>Interests</h3>
+        <ul>
+          {{interests}}
+        </ul>
+      </section>  
+  </div>
+</body>
+</html>

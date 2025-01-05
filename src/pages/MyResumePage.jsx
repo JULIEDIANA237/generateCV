@@ -1,100 +1,81 @@
 import React, { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ResumePreview from '../components/ResumePreview';
-import { useSelector } from 'react-redux';
-import html2canvas from 'html2canvas'; // Import html2canvas
-import { FaArrowLeft, FaDownload } from 'react-icons/fa'; // Import des icônes
+import { FaArrowLeft, FaDownload } from 'react-icons/fa';
+import html2pdf from 'html2pdf.js';
 
 const MyResumePage = () => {
   const navigate = useNavigate();
   const resumeRef = useRef(null);
-  const [isDownloaded, setIsDownloaded] = useState(false); // État pour suivre si le CV a été téléchargé
-  const [isDownloading, setIsDownloading] = useState(false); // État pour indiquer que le téléchargement est en cours
+  const [isDownloading, setIsDownloading] = useState(false);
 
-  // Utilisez useSelector pour récupérer les données du store Redux
-  const resume = useSelector((state) => state.resume);
-
-  const handleDownloadImage = () => {
+  const handleDownloadPDF = () => {
     if (resumeRef.current) {
-      const content = resumeRef.current;
-
-      // Affichage de l'indicateur de chargement
       setIsDownloading(true);
 
-      // Utilisation de html2canvas pour prendre une capture du composant
-      html2canvas(content).then((canvas) => {
-        // Créer une URL de l'image à partir du canvas
-        const imageURL = canvas.toDataURL('image/png');
-        
-        // Créer un lien temporaire pour télécharger l'image
-        const link = document.createElement('a');
-        link.href = imageURL;
-        link.download = 'CV.png'; // Nom de l'image téléchargée
-        link.click();
+      const options = {
+        margin: 0, // Marges (haut, droite, bas, gauche)
+        filename: 'CV.pdf',
+        image: { type: 'PNG', quality: 1 },
+        html2canvas: {
+          scale: 2, // Augmente la qualité du rendu
+          useCORS: true, // Autorise les ressources externes
+        },
+      };
 
-        // Mettre à jour l'état pour afficher la notification
-        setIsDownloaded(true);
-        setIsDownloading(false);
-
-        // Masquer la notification après 3 secondes
-        setTimeout(() => {
-          setIsDownloaded(false);
-        }, 3000);
-      });
+      // Génération du PDF
+      html2pdf()
+        .set(options)
+        .from(resumeRef.current)
+        .save()
+        .then(() => {
+          console.log('PDF téléchargé avec succès.');
+        })
+        .catch((error) => {
+          console.error('Erreur lors de la génération du PDF:', error);
+        })
+        .finally(() => {
+          setIsDownloading(false);
+        });
     }
   };
 
   return (
-    <div className="bg-gradient-to-r from-blue-200 via-purple-200 to-pink-200 p-8 rounded-lg shadow-lg">
-      <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-center mb-8 text-gray-800">
+    <div className="resume-page-container">
+      <h1 className="text-2xl sm:text-3xl font-bold text-center text-gray-800 mb-6 px-4">
         Aperçu de votre CV
       </h1>
 
-      <div className="flex justify-center mb-8">
-        <div className="w-full max-w-4xl">
-          <ResumePreview
-            ref={resumeRef}
-            personalInfo={resume.personalInfo}  // Données de personalInfo depuis Redux
-            experiences={resume.experiences}    // Données de experiences depuis Redux
-            education={resume.education}        // Données de education depuis Redux
-            skills={resume.skills.map((skill) => skill.content)}  // Modification de skills pour correspondre au format attendu
-            languages={resume.languages}        // Données de languages depuis Redux
-            interests={resume.interests}        // Données de interests depuis Redux
-          />
-        </div>
+      {/* Conteneur pour le CV */}
+      <div
+        ref={resumeRef}
+         
+      >
+        <ResumePreview />
       </div>
-      
-      {/* Section des boutons */}
-      <div className="flex flex-col sm:flex-row justify-center space-x-0 sm:space-x-4 space-y-4 sm:space-y-0">
+
+      {/* Boutons d'action */}
+      <div className="actions flex flex-wrap justify-center mt-6 gap-4 px-4">
         <button
           onClick={() => navigate('/details/1')}
-          className="flex items-center justify-center px-4 py-2 sm:px-6 sm:py-3 bg-gray-300 rounded-lg text-center font-semibold hover:bg-gray-400 transition duration-200 text-sm sm:text-base"
+          className="flex items-center px-4 py-2 bg-blue-500 text-white rounded-md shadow-md hover:bg-blue-600 transition duration-200 w-full sm:w-auto justify-center"
         >
           <FaArrowLeft className="mr-2" /> Retour
         </button>
         <button
-          onClick={handleDownloadImage}
-          className={`flex items-center justify-center px-4 py-2 sm:px-6 sm:py-3 ${isDownloading ? 'bg-gray-400' : 'bg-blue-600'} text-white rounded-lg text-center font-semibold hover:${isDownloading ? 'bg-gray-400' : 'bg-blue-700'} transition duration-200 text-sm sm:text-base`}
-          disabled={isDownloading} // Désactive le bouton pendant le téléchargement
+          onClick={handleDownloadPDF}
+          className={`flex items-center px-4 py-2 ${
+            isDownloading ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-500 hover:bg-green-600'
+          } text-white rounded-md shadow-md transition duration-200 w-full sm:w-auto justify-center`}
+          disabled={isDownloading}
         >
-          {isDownloading ? (
+          {isDownloading ? 'Téléchargement...' : (
             <>
-              <FaDownload className="mr-2" /> Téléchargement...
-            </>
-          ) : (
-            <>
-              <FaDownload className="mr-2" /> Télécharger le CV
+              <FaDownload className="mr-2" /> Télécharger en PDF
             </>
           )}
         </button>
       </div>
-
-      {/* Notification de téléchargement réussi */}
-      {isDownloaded && (
-        <div className="fixed bottom-10 left-1/2 transform -translate-x-1/2 bg-green-500 text-white px-8 py-4 rounded-lg shadow-xl opacity-90 animate-bounce">
-          <p className="text-lg font-semibold">Le CV a été téléchargé avec succès !</p>
-        </div>
-      )}
     </div>
   );
 };
