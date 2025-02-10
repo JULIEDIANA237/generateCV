@@ -7,6 +7,7 @@ import DetailsPage from './pages/DetailsPage';
 import AboutPage from './pages/AboutPage';
 import MyResumePage from './pages/MyResumePage';
 import ImportPage  from './pages/ImportPage';
+import TestResume from './pages/TestResume';
  
  
 
@@ -15,7 +16,7 @@ const App = () => {
     <Router>
        
       <Routes>
-      <Route path="/" element={<AboutPage />} />
+      <Route path="/" element={<TestResume />} />
         <Route path="/modele" element={<HomePage />} />
         <Route path="/import/:id" element={<ImportPage />} />
         

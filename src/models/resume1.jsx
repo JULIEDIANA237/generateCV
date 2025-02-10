@@ -12,12 +12,15 @@ const Resume1 = () => {
                 </div>
                 <div
                     style={{
-                        width: 100,
-                        height: 100,
-                        borderRadius: 50,
+                        width: 150,
+                        height: 150,
+                        borderRadius: 75,
                         backgroundColor: 'white',
                         marginTop: 8,
                         aspectRatio: 1, 
+                        backgroundImage: `url(${image})`,
+                        backgroundSize: 'cover'
+                        
                     }}
                 >
 
@@ -53,7 +56,7 @@ const Resume1 = () => {
                 </div>
             </div>
         </div>
-        <div style={{height:'100%',flex:0.65,padding:8,display:'flex',flexDirection:'column'}}>
+        <div style={{height:'100%',flex:0.65,padding:8,display:'flex',flexDirection:'column',maxWidth:500}}>
             <div style={{flex:0.2}}>
                 <div style={{marginTop:8,flex:1,display:'flex',justifyContent:'center',alignItems:'center',flexDirection:'column',}}>
                     <div style={{flex:0.2,width:'100%',borderBottomWidth:1,borderBottomColor:'#c0c0c0',marginBottom:4}}>
