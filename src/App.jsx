@@ -18,6 +18,7 @@ const App = () => {
       <Route path="/" element={<AboutPage />} />
         <Route path="/modele" element={<HomePage />} />
         <Route path="/import/:id" element={<ImportPage />} />
+        <Route path="/import" element={<ImportPage />} />
         
         <Route path="/my-resume/:id" element={<MyResumePage />} />
          
