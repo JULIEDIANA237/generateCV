@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams, useLocation } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
+import { useAuth0 } from '@auth0/auth0-react';
 import Sidebar from '../components/Sidebar';
 import PersonalInfoForm from '../components/PersonalInfoForm';
 import WorkExperienceForm from '../components/WorkExperienceForm';
@@ -10,17 +11,11 @@ import InterestForm from '../components/InterestsForm';
 import { FaArrowLeft, FaArrowRight } from 'react-icons/fa';
 
 const DetailsPage = () => {
-  const [currentSection, setCurrentSection] = useState('Informations personnelles');
-  const [completedSections, setCompletedSections] = useState([]);
-  const [notification, setNotification] = useState(null);
-  const [isTransitioning, setIsTransitioning] = useState(false);
-  const [userData, setUserData] = useState(null);
-  const location = useLocation();
+  const { user, isAuthenticated, isLoading } = useAuth0();
   const navigate = useNavigate();
   const { id: templateId } = useParams();
-   // Récupérer le sessionId depuis l'URL
-   const queryParams = new URLSearchParams(location.search);
-   const sessionId = queryParams.get('sessionId');
+  const [currentSection, setCurrentSection] = useState('Informations personnelles');
+  const [isTransitioning, setIsTransitioning] = useState(false);
 
   const sections = [
     'Informations personnelles',
@@ -32,51 +27,15 @@ const DetailsPage = () => {
   ];
 
   useEffect(() => {
-    console.log('Session ID:', sessionId);
-    if (sessionId) {
-      fetch(`http://localhost:5000/api/user-data/${sessionId}`)
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error(`Error ${response.status}: ${response.statusText}`);
-        }
-        return response.json();
-      })
-      .then((data) => setUserData(data))
-      .catch((error) => {
-        console.error('Error fetching user data:', error);
-        setNotification({ message: 'Impossible de charger les données utilisateur.', type: 'error' });
-      });
-
-    }
-  }, [sessionId]);
-  
-
-  useEffect(() => {
-    console.log('Initialisation des données de la page');
-
     const savedSection = localStorage.getItem('currentSection');
-    if (savedSection) {
-      console.log(`Section sauvegardée trouvée : ${savedSection}`);
-      setCurrentSection(savedSection);
-    }
-
-    const savedCompletedSections = JSON.parse(localStorage.getItem('completedSections')) || [];
-    setCompletedSections(savedCompletedSections);
-
-     
+    if (savedSection) setCurrentSection(savedSection);
   }, []);
 
   useEffect(() => {
-    console.log('Mise à jour des données dans localStorage :');
-    console.log(`Section actuelle : ${currentSection}`);
-    console.log('Sections complétées :', completedSections);
-
     localStorage.setItem('currentSection', currentSection);
-    localStorage.setItem('completedSections', JSON.stringify(completedSections));
-  }, [currentSection, completedSections]);
+  }, [currentSection]);
 
   const handleSectionChange = (newSection) => {
-    console.log(`Changement de section : ${currentSection} -> ${newSection}`);
     setIsTransitioning(true);
     setTimeout(() => {
       setCurrentSection(newSection);
@@ -84,23 +43,14 @@ const DetailsPage = () => {
     }, 300);
   };
 
-  const showNotification = (message, type) => {
-    console.log(`[Notification - ${type.toUpperCase()}] : ${message}`);
-    setNotification({ message, type });
-    setTimeout(() => setNotification(null), 3000);
-  };
-
   const nextSection = () => {
     const currentIndex = sections.indexOf(currentSection);
-  
     if (currentIndex < sections.length - 1) {
       handleSectionChange(sections[currentIndex + 1]);
     } else {
-      console.log('Navigation vers la prévisualisation du CV');
       navigate(`/my-resume/${templateId}`);
     }
   };
-  
 
   const previousSection = () => {
     const currentIndex = sections.indexOf(currentSection);
@@ -112,116 +62,47 @@ const DetailsPage = () => {
   const renderSection = () => {
     switch (currentSection) {
       case 'Informations personnelles':
-        {console.log('Données personnelles transmises à PersonalInfoForm :', userData)}
-        return (
-          <PersonalInfoForm
-            userData={userData}
-            onFormComplete={(isComplete) => {
-              if (isComplete && !completedSections.includes('Informations personnelles')) {
-                setCompletedSections((prev) => [...prev, 'Informations personnelles']);
-              }
-            }}
-          />
-        );
+        return <PersonalInfoForm userData={isAuthenticated ? user : null} />;
       case 'Expérience professionnelle':
-        console.log('Affichage de la section : Expérience professionnelle');
-        return (
-          <WorkExperienceForm
-             
-            onFormComplete={(isComplete) => {
-              if (isComplete && !completedSections.includes('Expérience professionnelle')) {
-                setCompletedSections((prev) => [...prev, 'Expérience professionnelle']);
-              }
-            }}
-            setCompletedSections={setCompletedSections}
-          />
-        );
+        return <WorkExperienceForm />;
       case 'Formation académique':
-        console.log('Affichage de la section : Formation académique');
-        return (
-          <EducationForm
-             
-            onFormComplete={(isComplete) => {
-              if (isComplete && !completedSections.includes('Formation académique')) {
-                setCompletedSections((prev) => [...prev, 'Formation académique']);
-              }
-            }}
-            setCompletedSections={setCompletedSections}
-          />
-        );
+        return <EducationForm />;
       case 'Compétences clés':
-        console.log('Affichage de la section : Compétences clés');
-        return (
-          <SkillsForm
-            
-            onFormComplete={(isComplete) => {
-              if (isComplete && !completedSections.includes('Compétences clés')) {
-                setCompletedSections((prev) => [...prev, 'Compétences clés']);
-              }
-            }}
-            setCompletedSections={setCompletedSections}
-          />
-        );
+        return <SkillsForm />;
       case 'Langues':
-        console.log('Affichage de la section : Langues');
-        return (
-          <LanguagesForm
-            
-            onFormComplete={(isComplete) => {
-              if (isComplete && !completedSections.includes('Langues')) {
-                setCompletedSections((prev) => [...prev, 'Langues']);
-              }
-            }}
-            setCompletedSections={setCompletedSections}
-          />
-        );
+        return <LanguagesForm />;
       case "Centres d'intérêt":
-        console.log('Affichage de la section : Centres d’intérêt');
-        return (
-          <InterestForm
-             
-          />
-
-        );
+        return <InterestForm />;
       default:
-        console.warn('Section inconnue :', currentSection);
         return null;
     }
   };
 
+  if (isLoading) {
+    return <p className="text-center text-xl font-bold">Chargement des données...</p>;
+  }
+
   return (
     <div className="flex flex-col md:flex-row min-h-screen">
-      {notification && (
-        <div
-          className={`fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg z-50 text-white ${
-            notification.type === 'success' ? 'bg-green-500' : notification.type === 'error' ? 'bg-red-500' : 'bg-blue-500'
-          }`}
-        >
-          {notification.message}
-        </div>
-      )}
-
+      {/* Sidebar */}
       <div className="md:w-1/4 w-full bg-white shadow-xl p-6">
-        <Sidebar
-          currentSection={currentSection}
-          onSelectSection={(section) => handleSectionChange(section)}
-          completedSections={completedSections}
-        />
+        <Sidebar currentSection={currentSection} onSelectSection={handleSectionChange} />
       </div>
 
+      {/* Contenu principal */}
       <div className="md:w-3/4 w-full p-8">
-        <div
-          className={`transition-opacity duration-300 ${isTransitioning ? 'opacity-0' : 'opacity-100'}`}
-        >
+         
+
+        <div className={`transition-opacity duration-300 ${isTransitioning ? 'opacity-0' : 'opacity-100'}`}>
           {renderSection()}
         </div>
 
+        {/* Boutons de navigation */}
         <div className="flex flex-col sm:flex-row justify-between items-center mt-6 gap-4">
-          {/* Bouton Précédent */}
           <button
             disabled={currentSection === sections[0]}
             onClick={previousSection}
-            className={`flex items-center justify-center w-full sm:w-auto px-4 py-2 bg-gray-200 rounded-lg shadow-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-400 transition duration-200 ease-in-out ${
+            className={`flex items-center justify-center w-full sm:w-auto px-4 py-2 bg-gray-200 rounded-lg shadow-md hover:bg-gray-400 focus:outline-none ${
               currentSection === sections[0] && 'bg-gray-300 text-gray-500 cursor-not-allowed'
             }`}
           >
@@ -229,18 +110,14 @@ const DetailsPage = () => {
             Précédent
           </button>
 
-          {/* Bouton Suivant */}
           <button
             onClick={nextSection}
-            className="flex items-center justify-center w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200 ease-in-out"
+            className="flex items-center justify-center w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded-lg shadow-md hover:bg-blue-700 focus:outline-none"
           >
-            {sections.indexOf(currentSection) === sections.length - 1
-              ? 'Prévisualiser le CV'
-              : 'Suivant'}
+            {sections.indexOf(currentSection) === sections.length - 1 ? 'Prévisualiser le CV' : 'Suivant'}
             <FaArrowRight className="ml-2" />
           </button>
         </div>
-
       </div>
     </div>
   );

@@ -4,7 +4,7 @@ import { PlusIcon } from '@heroicons/react/24/solid';
 import { useDispatch, useSelector } from 'react-redux';
 import { addEducation, updateEducation, removeEducation } from '../features/resumeSlice';
 
-const EducationForm = ({ onFormComplete, setCompletedSections, completedSections = [] }) => {
+const EducationForm = ( ) => {
   const dispatch = useDispatch();
   const education = useSelector((state) => state.resume.education);
   const [notification, setNotification] = useState(null);
@@ -68,29 +68,7 @@ const EducationForm = ({ onFormComplete, setCompletedSections, completedSections
     setTimeout(() => setNotification(null), 3000);
   };
 
-  // Vérifier la complétude de la section
-  useEffect(() => {
-    const allFieldsFilled = education.every(
-      (edu) =>
-        edu.title &&
-        edu.school &&
-        edu.startDate &&
-        edu.endDate &&
-        !Object.values(errors).some((error) => error)
-    );
-
-    // Mettre à jour l'état de la complétude pour la section "Formation académique"
-    onFormComplete(allFieldsFilled);
-
-    if (allFieldsFilled && !completedSections.includes('Formation académique')) {
-      setCompletedSections((prevCompletedSections) => {
-        if (!prevCompletedSections.includes('Formation académique')) {
-          return [...prevCompletedSections, 'Formation académique'];
-        }
-        return prevCompletedSections;
-      });
-    }
-  }, [education, errors, onFormComplete, setCompletedSections]);
+   
 
   return (
     <div className="p-6 rounded-lg shadow-orange-lg transition-all duration-300 ease-in-out">
