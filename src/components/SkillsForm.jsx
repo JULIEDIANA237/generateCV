@@ -26,9 +26,7 @@ const SkillsForm = () => {
 
   return (
     <div className="p-6 max-w-4xl mx-auto rounded-lg shadow-orange-lg">
-      <h2 className="text-xl sm:text-3xl font-semibold mb-6 text-center text-orange-400">
-        Compétences clés
-      </h2>
+ 
 
       {skills.map((skill, index) => (
         <div

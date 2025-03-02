@@ -47,9 +47,7 @@ const InterestsForm = () => {
 
   return (
     <div className="p-6 rounded-lg shadow-orange-lg max-w-3xl mx-auto">
-  <h2 className="text-xl sm:text-3xl font-semibold mb-6 text-center text-orange-400">
-    Centres d'Intérêt
-  </h2>
+   
 
   {/* Display errors */}
   {error && (

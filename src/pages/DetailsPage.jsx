@@ -11,11 +11,18 @@ import InterestForm from '../components/InterestsForm';
 import { FaArrowLeft, FaArrowRight } from 'react-icons/fa';
 
 const DetailsPage = () => {
-  const { user, isAuthenticated, isLoading } = useAuth0();
   const navigate = useNavigate();
   const { id: templateId } = useParams();
   const [currentSection, setCurrentSection] = useState('Informations personnelles');
-  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [resumeData, setResumeData] = useState({});
+
+  useEffect(() => {
+    const storedData = localStorage.getItem("linkedinData");
+    if (storedData) {
+      setResumeData(JSON.parse(storedData)); // Charger les données sauvegardées
+    }
+  }, []);
+  
 
   const sections = [
     'Informations personnelles',
@@ -23,104 +30,81 @@ const DetailsPage = () => {
     'Formation académique',
     'Compétences clés',
     'Langues',
-    'Centres d\'intérêt',
+    "Centres d'intérêt",
   ];
 
-  useEffect(() => {
-    const savedSection = localStorage.getItem('currentSection');
-    if (savedSection) setCurrentSection(savedSection);
-  }, []);
-
-  useEffect(() => {
-    localStorage.setItem('currentSection', currentSection);
-  }, [currentSection]);
-
-  const handleSectionChange = (newSection) => {
-    setIsTransitioning(true);
-    setTimeout(() => {
-      setCurrentSection(newSection);
-      setIsTransitioning(false);
-    }, 300);
+  const handleFormUpdate = (section, data) => {
+    setResumeData((prevData) => ({
+      ...prevData,
+      [section]: data,
+    }));
   };
 
   const nextSection = () => {
     const currentIndex = sections.indexOf(currentSection);
     if (currentIndex < sections.length - 1) {
-      handleSectionChange(sections[currentIndex + 1]);
+      setCurrentSection(sections[currentIndex + 1]);
     } else {
-      navigate(`/my-resume/${templateId}`);
+      navigate(`/my-resume/${templateId}`, { state: { resumeData } });
     }
   };
-
-  const previousSection = () => {
-    const currentIndex = sections.indexOf(currentSection);
-    if (currentIndex > 0) {
-      handleSectionChange(sections[currentIndex - 1]);
-    }
-  };
-
-  const renderSection = () => {
-    switch (currentSection) {
-      case 'Informations personnelles':
-        return <PersonalInfoForm userData={isAuthenticated ? user : null} />;
-      case 'Expérience professionnelle':
-        return <WorkExperienceForm />;
-      case 'Formation académique':
-        return <EducationForm />;
-      case 'Compétences clés':
-        return <SkillsForm />;
-      case 'Langues':
-        return <LanguagesForm />;
-      case "Centres d'intérêt":
-        return <InterestForm />;
-      default:
-        return null;
-    }
-  };
-
-  if (isLoading) {
-    return <p className="text-center text-xl font-bold">Chargement des données...</p>;
-  }
 
   return (
-    <div className="flex flex-col md:flex-row min-h-screen">
-      {/* Sidebar */}
-      <div className="md:w-1/4 w-full bg-white shadow-xl p-6">
-        <Sidebar currentSection={currentSection} onSelectSection={handleSectionChange} />
-      </div>
+    <div className="flex flex-col md:flex-row min-h-screen bg-gray-100">
+  {/* Sidebar avec fond et bordure */}
+  <div className="md:w-1/4 w-full bg-white shadow-md border-r border-gray-200 p-6">
+    <Sidebar currentSection={currentSection} onSelectSection={setCurrentSection} />
+  </div>
 
-      {/* Contenu principal */}
-      <div className="md:w-3/4 w-full p-8">
-         
+  {/* Contenu principal */}
+  <div className="flex-1 p-6 md:p-8">
+    <h2 className="text-2xl font-bold text-center mb-6 text-gray-800">
+      {currentSection}
+    </h2>
 
-        <div className={`transition-opacity duration-300 ${isTransitioning ? 'opacity-0' : 'opacity-100'}`}>
-          {renderSection()}
-        </div>
-
-        {/* Boutons de navigation */}
-        <div className="flex flex-col sm:flex-row justify-between items-center mt-6 gap-4">
-          <button
-            disabled={currentSection === sections[0]}
-            onClick={previousSection}
-            className={`flex items-center justify-center w-full sm:w-auto px-4 py-2 bg-gray-200 rounded-lg shadow-md hover:bg-gray-400 focus:outline-none ${
-              currentSection === sections[0] && 'bg-gray-300 text-gray-500 cursor-not-allowed'
-            }`}
-          >
-            <FaArrowLeft className="mr-2" />
-            Précédent
-          </button>
-
-          <button
-            onClick={nextSection}
-            className="flex items-center justify-center w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded-lg shadow-md hover:bg-blue-700 focus:outline-none"
-          >
-            {sections.indexOf(currentSection) === sections.length - 1 ? 'Prévisualiser le CV' : 'Suivant'}
-            <FaArrowRight className="ml-2" />
-          </button>
-        </div>
-      </div>
+    {/* Formulaires affichés dynamiquement */}
+    <div className="bg-white shadow-lg rounded-xl p-6 md:p-8">
+      {currentSection === 'Informations personnelles' && (
+        <PersonalInfoForm onUpdate={(data) => handleFormUpdate('personalInfo', data)} />
+      )}
+      {currentSection === 'Expérience professionnelle' && (
+        <WorkExperienceForm onUpdate={(data) => handleFormUpdate('workExperience', data)} />
+      )}
+      {currentSection === 'Formation académique' && (
+        <EducationForm onUpdate={(data) => handleFormUpdate('education', data)} />
+      )}
+      {currentSection === 'Compétences clés' && (
+        <SkillsForm onUpdate={(data) => handleFormUpdate('skills', data)} />
+      )}
+      {currentSection === 'Langues' && (
+        <LanguagesForm onUpdate={(data) => handleFormUpdate('languages', data)} />
+      )}
+      {currentSection === "Centres d'intérêt" && (
+        <InterestForm onUpdate={(data) => handleFormUpdate('interests', data)} />
+      )}
     </div>
+
+    {/* Navigation entre les sections */}
+    <div className="flex justify-between mt-8">
+      <button
+        onClick={() => setCurrentSection(sections[sections.indexOf(currentSection) - 1])}
+        disabled={currentSection === sections[0]}
+        className="px-4 py-2 sm:px-6 sm:py-3 text-sm sm:text-base text-white bg-gray-500 hover:bg-gray-600 rounded-lg shadow-md transition-all duration-200 disabled:opacity-50"
+      >
+        ⬅ Précédent
+      </button>
+
+      <button
+        onClick={nextSection}
+        className="px-4 py-2 sm:px-6 sm:py-3 text-sm sm:text-base text-white bg-orange-500 hover:bg-orange-600 rounded-lg shadow-md transition-all duration-200"
+      >
+        {currentSection === sections[sections.length - 1] ? '👀 Prévisualiser' : 'Suivant ➡'}
+      </button>
+    </div>
+
+  </div>
+</div>
+
   );
 };
-
 export default DetailsPage;
