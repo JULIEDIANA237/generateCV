@@ -9,7 +9,7 @@ const ImportPage = () => {
   const [linkedinUrl, setLinkedinUrl] = useState("");
 
   const CLIENT_ID = "78ke6wzr8aa96y";
-  const REDIRECT_URI = "http://localhost:5173/callback";
+  const REDIRECT_URI = "https://generate-cv-seven.vercel.app/callback";
   const STATE = "random_string";
   const SCOPE = "openid profile email w_member_social";
 
