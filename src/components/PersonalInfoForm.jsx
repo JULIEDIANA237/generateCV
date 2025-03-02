@@ -1,184 +1,161 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { updatePersonalInfo } from '../features/resumeSlice';
-
-const PersonalInfoForm = ({ userData, onFormComplete }) => {
+import { updatePersonalInfo,updateProfileImage } from '../features/resumeSlice';
+ 
+const PersonalInfoForm = () => {
+   
   const dispatch = useDispatch();
   const personalInfo = useSelector((state) => state.resume.personalInfo);
   const [previewImage, setPreviewImage] = useState(localStorage.getItem('profileImage') || null);
 
-  // Synchronisation des données initiales transmises via userData
   useEffect(() => {
-    if (userData) {
-      console.log('Données transmises à PersonalInfoForm:', userData);
+    setPreviewImage(personalInfo.image || localStorage.getItem('profileImage') || null);
+  }, [personalInfo.image]);
+
+   
+
+  const convertImageToBase64 = async (imageUrl) => {
+    try {
+      const response = await fetch(imageUrl);
+      const blob = await response.blob();
   
-      const initialData = {
-        firstName: userData.firstName || '',
-        lastName: userData.lastName || '',
-        email: userData.email || '',
-        image: userData.profilePicture || '',
-        phone: userData.phone || '',
-        title: userData.title || '',
-        description: userData.description || '',
-      };
-  
-      dispatch(updatePersonalInfo(initialData)); // Met à jour les données une seule fois
-  
-      if (userData.profilePicture) {
-        setPreviewImage(userData.profilePicture); // Met à jour l'aperçu de l'image
-      }
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result);
+        reader.readAsDataURL(blob);
+      });
+    } catch (error) {
+      console.error("Erreur de conversion de l'image en Base64 :", error);
+      return imageUrl; // Retourne l'URL d'origine si la conversion échoue
     }
-  }, [userData, dispatch]); // Supprime `personalInfo` du tableau des dépendances
+  };
+
+  useEffect(() => {
+    const linkedinData = JSON.parse(localStorage.getItem("linkedinData"));
+  
+    if (linkedinData) {
+      dispatch(updatePersonalInfo({
+        firstName: linkedinData.given_name || "",
+        lastName: linkedinData.family_name || "",
+        email: linkedinData.email || "",
+        image: linkedinData.picture || "",
+        //title: linkedinData.sub || "",
+      }));
+    }
+  }, [dispatch]);
   
 
-  // Gestion des modifications des champs
+  useEffect(() => {
+    const updateProfileImage = async () => {
+      if (personalInfo.image && personalInfo.image.startsWith('http')) {
+        console.log("Conversion de l'image LinkedIn en Base64...");
+        const base64Image = await convertImageToBase64(personalInfo.image);
+        dispatch(updatePersonalInfo({ ...personalInfo, image: base64Image }));
+      }
+    };
+  
+    updateProfileImage();
+  }, [personalInfo.image, dispatch]);
+  
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     dispatch(updatePersonalInfo({ ...personalInfo, [name]: value }));
   };
 
-  // Gestion de l'importation de l'image
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
+  const handleImageChange = (event) => {
+    const file = event.target.files[0];
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        const base64Image = reader.result;
-        setPreviewImage(base64Image);
-        localStorage.setItem('profileImage', base64Image);
-        dispatch(updatePersonalInfo({ ...personalInfo, image: base64Image }));
+        const imageUrl = reader.result;
+        
+        // Mise à jour de l'image dans localStorage
+        localStorage.setItem('profileImage', imageUrl); 
+        
+        // Mise à jour de Redux
+        dispatch(updateProfileImage(imageUrl)); 
+        
+        // Met à jour l'aperçu immédiatement
+        setPreviewImage(imageUrl);  
       };
       reader.readAsDataURL(file);
     }
   };
 
-  // Validation de complétion du formulaire
-  useEffect(() => {
-    const allFieldsFilled =
-      personalInfo.firstName &&
-      personalInfo.lastName &&
-      personalInfo.title &&
-      personalInfo.email &&
-      personalInfo.phone &&
-      personalInfo.description;
-
-    onFormComplete(allFieldsFilled);
-  }, [personalInfo, onFormComplete]);
+  
+  
+  
 
   return (
-    <div className="p-6 rounded-lg shadow-lg max-w-4xl mx-auto">
-      <h2 className="text-xl sm:text-3xl font-semibold mb-6 text-center text-orange-400">
-        Informations personnelles
-      </h2>
-
-      <form className="space-y-6 sm:space-y-8">
-        {/* Prévisualisation de l'image */}
-        <div className="flex items-center justify-center gap-4 sm:gap-6">
-          <div className="w-16 h-16 sm:w-28 sm:h-28 rounded-full overflow-hidden bg-gray-200">
-            {previewImage ? (
-              <img src={previewImage} alt="Profil" className="w-full h-full object-cover" />
-            ) : (
-              <span className="text-xs sm:text-sm text-gray-600 flex items-center justify-center h-full">
-                Aucune image
-              </span>
-            )}
-          </div>
-          <div>
-            <label className="block mb-1 sm:mb-2 text-sm sm:text-lg font-medium text-black">
-              Photo de profil
-            </label>
-            <input
-              type="file"
-              name="image"
-              accept="image/*"
-              onChange={handleImageChange}
-              className="w-full border border-gray-300 rounded-lg p-2 sm:p-3 text-sm sm:text-base text-gray-600 focus:outline-none focus:ring-2 focus:ring-orange-400 transition duration-200 ease-in-out shadow-md"
-            />
-          </div>
-        </div>
-
-        {/* Champs de texte */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-          <div>
-            <label className="block mb-1 sm:mb-2 text-sm sm:text-lg font-medium text-black">
-              Prénom
-            </label>
-            <input
-              type="text"
-              name="firstName"
-              value={personalInfo.firstName || ''}
-              onChange={handleChange}
-              placeholder="Entrez votre prénom"
-              className="w-full border border-gray-300 rounded-lg p-2 sm:p-3 text-sm sm:text-base text-gray-600 focus:outline-none focus:ring-2 focus:ring-orange-400 transition duration-200 ease-in-out shadow-md"
-            />
-          </div>
-          <div>
-            <label className="block mb-1 sm:mb-2 text-sm sm:text-lg font-medium text-black">
-              Nom
-            </label>
-            <input
-              type="text"
-              name="lastName"
-              value={personalInfo.lastName || ''}
-              onChange={handleChange}
-              placeholder="Entrez votre nom"
-              className="w-full border border-gray-300 rounded-lg p-2 sm:p-3 text-sm sm:text-base text-gray-600 focus:outline-none focus:ring-2 focus:ring-orange-400 transition duration-200 ease-in-out shadow-md"
-            />
-          </div>
-          <div>
-            <label className="block mb-1 sm:mb-2 text-sm sm:text-lg font-medium text-black">
-              Titre
-            </label>
-            <input
-              type="text"
-              name="title"
-              value={personalInfo.title || ''}
-              onChange={handleChange}
-              placeholder="Entrez votre titre (ex. Développeur)"
-              className="w-full border border-gray-300 rounded-lg p-2 sm:p-3 text-sm sm:text-base text-gray-600 focus:outline-none focus:ring-2 focus:ring-orange-400 transition duration-200 ease-in-out shadow-md"
-            />
-          </div>
-          <div>
-            <label className="block mb-1 sm:mb-2 text-sm sm:text-lg font-medium text-black">
-              Email
-            </label>
-            <input
-              type="email"
-              name="email"
-              value={personalInfo.email || ''}
-              onChange={handleChange}
-              placeholder="Entrez votre email"
-              className="w-full border border-gray-300 rounded-lg p-2 sm:p-3 text-sm sm:text-base text-gray-600 focus:outline-none focus:ring-2 focus:ring-orange-400 transition duration-200 ease-in-out shadow-md"
-            />
-          </div>
-          <div>
-            <label className="block mb-1 sm:mb-2 text-sm sm:text-lg font-medium text-black">
-              Téléphone
-            </label>
-            <input
-              type="tel"
-              name="phone"
-              value={personalInfo.phone || ''}
-              onChange={handleChange}
-              placeholder="Entrez votre numéro de téléphone"
-              className="w-full border border-gray-300 rounded-lg p-2 sm:p-3 text-sm sm:text-base text-gray-600 focus:outline-none focus:ring-2 focus:ring-orange-400 transition duration-200 ease-in-out shadow-md"
-            />
-          </div>
-          <div>
-            <label className="block mb-1 sm:mb-2 text-sm sm:text-lg font-medium text-black">
-              Description
-            </label>
-            <textarea
-              name="description"
-              value={personalInfo.description || ''}
-              onChange={handleChange}
-              placeholder="Parlez de vous"
-              className="w-full border border-gray-300 rounded-lg p-2 sm:p-3 text-sm sm:text-base text-gray-600 focus:outline-none focus:ring-2 focus:ring-orange-400 transition duration-200 ease-in-out shadow-md"
-            />
-          </div>
-        </div>
-      </form>
+    <div className="p-6 w-full max-w-4xl mx-auto">
+  <form className="space-y-6 sm:space-y-8">
+    <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6">
+      <div className="w-16 h-16 sm:w-28 sm:h-28 rounded-full overflow-hidden bg-gray-200">
+        {previewImage ? (
+          <img src={previewImage} alt="Profil" className="w-full h-full object-cover" />
+        ) : (
+          <span className="text-xs sm:text-sm text-gray-600 flex items-center justify-center h-full">
+            Aucune image
+          </span>
+        )}
+      </div>
+      <div className="w-full sm:w-auto">
+        <label className="block mb-1 sm:mb-2 text-sm sm:text-lg font-medium text-black">
+          Photo de profil
+        </label>
+        <input
+          type="file"
+          name="image"
+          accept="image/*"
+          onChange={handleImageChange}
+          className="w-full sm:w-auto border border-gray-300 rounded-lg p-2 sm:p-3 text-sm sm:text-base text-gray-600 focus:outline-none focus:ring-2 focus:ring-orange-400 transition duration-200 ease-in-out shadow-md"
+        />
+      </div>
     </div>
+
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+      {[
+        { label: "Nom", name: "lastName", placeholder: "Entrez votre prénom" },
+        { label: "Prénom", name: "firstName", placeholder: "Entrez votre nom" },
+        { label: "Email", name: "email", placeholder: "Entrez votre email", type: "email" },
+        { label: "Titre", name: "title", placeholder: "Entrez votre titre (ex. Développeur)" },
+        { label: "Téléphone", name: "phone", placeholder: "Entrez votre numéro de téléphone", type: "tel" },
+        { label: "Adresse", name: "address", placeholder: "Entrez votre adresse" },
+      ].map((field) => (
+        <div key={field.name} className="w-full">
+          <label className="block mb-1 sm:mb-2 text-sm sm:text-lg font-medium text-black">
+            {field.label}
+          </label>
+          <input
+            type={field.type || "text"}
+            name={field.name}
+            value={personalInfo[field.name] || ""}
+            onChange={handleChange}
+            placeholder={field.placeholder}
+            className="w-full min-w-0 border border-gray-300 rounded-lg p-2 sm:p-3 text-sm sm:text-base text-gray-600 focus:outline-none focus:ring-2 focus:ring-orange-400 transition duration-200 ease-in-out shadow-md"
+          />
+        </div>
+      ))}
+    </div>
+
+    <div>
+      <label className="block mb-1 sm:mb-2 text-sm sm:text-lg font-medium text-black">
+        Description
+      </label>
+      <textarea
+        name="description"
+        value={personalInfo.description || ""}
+        onChange={handleChange}
+        placeholder="Décrivez-vous en quelques lignes..."
+        rows="4"
+        className="w-full border border-gray-300 rounded-lg p-2 sm:p-3 text-sm sm:text-base text-gray-600 focus:outline-none focus:ring-2 focus:ring-orange-400 transition duration-200 ease-in-out shadow-md"
+      />
+    </div>
+  </form>
+</div>
+
+
   );
 };
 

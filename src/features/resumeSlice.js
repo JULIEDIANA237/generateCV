@@ -9,6 +9,7 @@ const initialState = {
     email: '',
     phone: '',
     description: '',
+    address: '',
   },
   experiences: [], // Array of experience objects: { title, startDate, endDate, company, jobDescription }
   education: [], // Array of education objects: { title, startDate, endDate, school }
@@ -17,8 +18,8 @@ const initialState = {
      
   ],
   languages: [
-    { title: "Anglais", level: "Courant" }, // Exemple de données par défaut
-    { title: "Français", level: "Natif" },
+    { title: "Anglais", level: "Sélectionner un niveau" }, // Exemple de données par défaut
+     
   ],
   interests: [
     { title: "Voyage" },  // Exemple de données par défaut
@@ -40,8 +41,11 @@ const resumeSlice = createSlice({
     },
     updateExperience: (state, action) => {
       const { index, experience } = action.payload;
-      state.experiences[index] = experience;
-    },
+      if (state.experiences[index]) {
+        state.experiences[index] = experience;
+      }
+    }
+    ,
     removeExperience: (state, action) => {
       state.experiences.splice(action.payload, 1);
     },
@@ -89,6 +93,9 @@ const resumeSlice = createSlice({
     selectTemplate: (state, action) => {
       state.selectedTemplate = action.payload;
     },
+    updateProfileImage: (state, action) => {
+      state.personalInfo.image = action.payload; // Met à jour l'image dans Redux
+    },
     importLinkedInData: (state, action) => {
       const { fullName, firstName, lastName, profilePicture, email } = action.payload;
     
@@ -123,6 +130,7 @@ export const {
   updateInterest,
   removeInterest,
   selectTemplate, 
+  updateProfileImage,
   importLinkedInData,
 } = resumeSlice.actions;
 

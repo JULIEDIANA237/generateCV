@@ -1,224 +1,158 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import axios from 'axios';
-
-/**
- * Génère une chaîne aléatoire.
- * @param {number} length Longueur de la chaîne
- * @returns {string} Chaîne aléatoire
- */
-function generateRandomString(length) {
-  const charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~';
-  let result = '';
-  const randomValues = new Uint8Array(length);
-  window.crypto.getRandomValues(randomValues);
-  for (let i = 0; i < length; i++) {
-    result += charset[randomValues[i] % charset.length];
-  }
-  return result;
-}
-
-/**
- * Génère le code challenge à partir du code verifier en utilisant SHA-256
- * puis une conversion en Base64 URL-safe.
- * @param {string} codeVerifier
- * @returns {Promise<string>} Code challenge
- */
-async function generateCodeChallenge(codeVerifier) {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(codeVerifier);
-  const digest = await window.crypto.subtle.digest('SHA-256', data);
-  const base64Digest = btoa(String.fromCharCode(...new Uint8Array(digest)))
-    .replace(/\+/g, '-')
-    .replace(/\//g, '_')
-    .replace(/=+$/, '');
-  return base64Digest;
-}
+import React, { useEffect, useState } from 'react';
+import { useNavigate, useParams, useLocation } from 'react-router-dom';
 
 const ImportPage = () => {
-  // Récupère l'identifiant du template depuis l'URL
   const { id: selectedTemplateId } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
+  const [loading, setLoading] = useState(false);
+  const [linkedinUrl, setLinkedinUrl] = useState("");
 
-  // Récupère le client ID et l'URL de redirection depuis les variables d'environnement.
-  // Le client ID n'est pas sensible.
-  const clientId = import.meta.env.VITE_LINKEDIN_CLIENT_ID; // ex: "YOUR_CLIENT_ID"
-  // L'URL de redirection doit être identique à celle configurée dans l'application LinkedIn
-  const redirectUri =
-    import.meta.env.VITE_REDIRECT_URI || window.location.origin + '/import';
-  // Les scopes demandés (ajustez-les selon vos besoins)
-  const scope = 'openid profile email w_member_social';
-
-  const [linkedinUrl, setLinkedinUrl] = useState('');
-  const [isAuthenticating, setIsAuthenticating] = useState(false);
-  const [loadingMessage, setLoadingMessage] = useState('Chargement des données LinkedIn...');
+  const CLIENT_ID = "78ke6wzr8aa96y";
+  const REDIRECT_URI = "http://localhost:5173/callback";
+  const STATE = "random_string";
+  const SCOPE = "openid profile email w_member_social";
 
   useEffect(() => {
-    // Vérification si l'URL contient des paramètres de callback OAuth (code et state)
     const urlParams = new URLSearchParams(window.location.search);
-    const code = urlParams.get('code');
-    const state = urlParams.get('state');
+    const codeFromUrl = urlParams.get("code");
+    const stateFromUrl = urlParams.get("state");
+    const storedState = localStorage.getItem("linkedinOAuthState");
 
-    if (code && state) {
-      // Supprime les paramètres sensibles de l'URL
-      window.history.replaceState({}, document.title, window.location.pathname);
-      setIsAuthenticating(true);
-      setLoadingMessage('Authentification en cours...');
-      handleOAuthCallback(code, state);
-    }
-  }, []);
+    if (codeFromUrl) {
+      if (stateFromUrl !== storedState) {
+        console.error("❌ Échec : les valeurs de `state` ne correspondent pas !");
+        return;
+      }
 
-  /**
-   * Échange le code d'autorisation contre un token d'accès en utilisant PKCE.
-   * Il vérifie également le paramètre state stocké lors de la demande d'autorisation.
-   *
-   * @param {string} code Le code d'autorisation renvoyé par LinkedIn
-   * @param {string} stateFromUrl Le state renvoyé dans l'URL
-   */
-  const handleOAuthCallback = async (code, stateFromUrl) => {
-    // Récupère le state et le code verifier stockés dans le localStorage
-    const storedState = localStorage.getItem('pkce_state');
-    const storedCodeVerifier = localStorage.getItem('pkce_code_verifier');
-  
-    if (!storedState || storedState !== stateFromUrl) {
-      alert('État de validation invalide. Veuillez réessayer.');
-      navigate(`/details/${selectedTemplateId}`);
-      return;
+      console.log("🧹 Suppression de l'ancien code...");
+      localStorage.removeItem("linkedinAuthCode");
+
+      console.log("✅ Enregistrement du nouveau code OAuth :", codeFromUrl);
+      localStorage.setItem("linkedinAuthCode", JSON.stringify({ code: codeFromUrl, timestamp: Date.now() }));
+
+      setLoading(true);
+      exchangeCodeForToken(codeFromUrl);
+
+      // 🔄 Mise à jour de l'URL pour éviter de stocker l'ancien code
+      const newUrl = window.location.origin + window.location.pathname;
+      window.history.replaceState({}, document.title, newUrl);
     }
-  
-    const payload = {
-      code,
-      codeVerifier: storedCodeVerifier,
-      redirectUri, // Doit correspondre à celle configurée dans votre application LinkedIn
-      clientId,    // Votre client ID
-    };
-  
+  }, [window.location.search]);
+
+
+  const exchangeCodeForToken = async (code) => {
     try {
-      const tokenResponse = await axios.post('/api/linkedin-token', payload, {
-        headers: {
-          'Content-Type': 'application/json',
-        },
+      const response = await fetch("/api/linkedin", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code }),
+      });
+
+      if (!response.ok) throw new Error("Échec de l'obtention du token");
+
+      const data = await response.json();
+      const { access_token } = data;
+      if (!access_token) throw new Error("Aucun token reçu");
+
+      localStorage.setItem("linkedinAccessToken", access_token);
+      localStorage.removeItem("linkedinAuthCode");
+
+      fetchLinkedInProfile(access_token);
+    } catch (error) {
+      console.error("Erreur OAuth LinkedIn:", error);
+      alert("Erreur lors de l'authentification LinkedIn.");
+      setLoading(false);
+    }
+  };
+
+  const fetchLinkedInProfile = async (accessToken) => {
+    try {
+      const profileResponse = await fetch("https://api.linkedin.com/v2/userinfo", {
+        headers: { Authorization: `Bearer ${accessToken}` },
       });
   
-      const { access_token } = tokenResponse.data;
+      if (!profileResponse.ok) throw new Error("Impossible de récupérer les données LinkedIn");
   
-      if (access_token) {
-        // Récupération des données du profil de base
-        const profileResponse = await axios.get('https://api.linkedin.com/v2/userinfo', {
-          headers: {
-            Authorization: `Bearer ${access_token}`,
-          },
-        });
+      const userData = await profileResponse.json();
   
-        // Récupération de l'adresse email
-        const emailResponse = await axios.get(
-          'https://api.linkedin.com/v2/emailAddress?q=members&projection=(elements*(handle~))',
-          {
-            headers: {
-              Authorization: `Bearer ${access_token}`,
-            },
-          }
-        );
+      // Récupérer l'URL LinkedIn enregistrée avant la connexion
+      const linkedinUrl = localStorage.getItem("linkedinProfileUrl") || "";
   
-        // Combinez les données reçues
-        const rawResumeData = {
-          profile: profileResponse.data,
-          email: emailResponse.data,
-        };
+      // Associer l'URL LinkedIn aux données récupérées (si besoin)
+      const userDataWithUrl = { ...userData, linkedinUrl };
   
-        // Sauvegarde des données utilisateur dans le localStorage (ou dans un state global)
-        localStorage.setItem('rawResumeData', JSON.stringify(rawResumeData));
+      // Stocker les données dans localStorage (sans l'afficher)
+      console.log("Données LinkedIn récupérées :", userDataWithUrl);
+      localStorage.setItem("linkedinData", JSON.stringify(userDataWithUrl));
   
-        // Nettoyage des données PKCE stockées
-        localStorage.removeItem('pkce_state');
-        localStorage.removeItem('pkce_code_verifier');
-  
-        // Redirige vers la page de détails avec le template sélectionné
-        navigate(`/details/${selectedTemplateId}`);
-      } else {
-        alert("Échec de l'authentification LinkedIn.");
-        navigate(`/details/${selectedTemplateId}`);
-      }
+      alert("Importation réussie !");
+      navigate(selectedTemplateId ? `/details/${selectedTemplateId}` : "/");
     } catch (error) {
-      console.error("Erreur lors de l'échange du code pour le token :", error);
-      alert("Erreur lors de l’authentification LinkedIn. Veuillez réessayer.");
-      navigate(`/details/${selectedTemplateId}`);
+      console.error("Erreur API LinkedIn:", error);
+      alert("Impossible de récupérer les données LinkedIn.");
     }
   };
   
 
-  /**
-   * Démarre le processus d'authentification :
-   * - Vérifie que l'URL saisie est bien une URL LinkedIn valide
-   * - Génère le state, le codeVerifier et le codeChallenge pour PKCE
-   * - Construit l'URL d'autorisation et redirige l'utilisateur vers LinkedIn
-   */
-  const handleImport = async () => {
-    if (!linkedinUrl || !linkedinUrl.startsWith('https://www.linkedin.com/in/')) {
-      alert('Veuillez entrer une URL LinkedIn valide.');
+  const handleImportClick = () => {
+    if (!linkedinUrl.trim()) {
+      alert("Veuillez entrer l'URL de votre profil LinkedIn.");
       return;
     }
 
-    if (!selectedTemplateId) {
-      alert('Aucun modèle sélectionné.');
-      return;
-    }
+    localStorage.setItem("linkedinProfileUrl", linkedinUrl);
+    localStorage.setItem("selectedTemplateId", selectedTemplateId);
+    localStorage.removeItem("linkedinAuthCode");
+    localStorage.removeItem("linkedinAccessToken");
 
-    // Génération d'un state et d'un code verifier pour PKCE
-    const state = generateRandomString(16);
-    const codeVerifier = generateRandomString(64);
-    const codeChallenge = await generateCodeChallenge(codeVerifier);
+    const STATE = Math.random().toString(36).substring(2, 15);
+    localStorage.setItem("linkedinOAuthState", STATE);
 
-    // Stocke le state et le codeVerifier pour vérifier lors du callback
-    localStorage.setItem('pkce_state', state);
-    localStorage.setItem('pkce_code_verifier', codeVerifier);
+    const authUrl = `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(
+      REDIRECT_URI
+    )}&state=${STATE}&scope=${encodeURIComponent(SCOPE)}`;
 
-    // Construit l'URL d'autorisation LinkedIn avec les paramètres PKCE
-    const authorizationUrl = `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=${clientId}&redirect_uri=${encodeURIComponent(
-      redirectUri
-    )}&state=${state}&scope=${encodeURIComponent(scope)}&code_challenge=${codeChallenge}&code_challenge_method=S256`;
-
-    // Redirige l'utilisateur vers LinkedIn pour l'autorisation
-    window.location.href = authorizationUrl;
+    window.location.href = authUrl;
   };
 
-  const handleContinueWithoutImport = () => {
-    navigate(`/details/${selectedTemplateId}`);
-  };
+  return (
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 px-4">
+      {loading ? (
+        <p className="text-lg font-semibold text-blue-600">Connexion en cours... Veuillez patienter.</p>
+      ) : (
+        <>
+          <h1 className="text-lg sm:text-2xl md:text-3xl font-bold mb-4 text-center">
+            Importer vos informations LinkedIn
+          </h1>
 
-  return isAuthenticating ? (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 px-4">
-      <p className="text-lg sm:text-xl font-bold text-center">{loadingMessage}</p>
-      <div className="loader mt-4"></div> {/* Spinner de chargement */}
-    </div>
-  ) : (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 px-4">
-      <h1 className="text-xl sm:text-2xl font-bold mb-4 text-center">
-        Importer vos informations LinkedIn
-      </h1>
-      <input
-        type="text"
-        placeholder="Entrez l'URL de votre profil LinkedIn"
-        value={linkedinUrl}
-        onChange={(e) => setLinkedinUrl(e.target.value)}
-        className="p-2 border border-gray-300 rounded mb-4 w-full sm:w-2/3 max-w-lg"
-      />
-      <button
-        onClick={handleImport}
-        className="px-4 py-2 bg-blue-500 text-white rounded mb-4 w-full sm:w-auto sm:px-6 sm:py-3 text-center transition duration-200 hover:bg-blue-600"
-      >
-        Importer
-      </button>
-      <p className="text-sm sm:text-base text-gray-600 text-center">
-        Vous n'avez pas de profil LinkedIn ?{' '}
-        <span
-          onClick={handleContinueWithoutImport}
-          className="text-blue-500 cursor-pointer hover:underline"
-        >
-          Continuez sans importer vos informations
-        </span>
-        .
-      </p>
+          <div className="w-full sm:w-3/4 md:w-2/3 lg:w-1/2 max-w-lg flex flex-col sm:flex-row gap-2">
+            <input
+              type="text"
+              placeholder="Entrez l'URL de votre profil LinkedIn"
+              value={linkedinUrl}
+              onChange={(e) => setLinkedinUrl(e.target.value)}
+              className="p-2 border border-gray-300 rounded w-full text-sm sm:text-base"
+            />
+            <button
+              onClick={handleImportClick}
+              className="px-6 py-3 bg-green-500 text-white rounded transition duration-200 hover:bg-green-600 text-lg"
+            >
+              🚀 Importer les données
+            </button>
+          </div>
+
+          <p className="text-sm text-gray-600 text-center mt-4">
+            Vous n'avez pas de profil LinkedIn ? {" "}
+            <span
+              onClick={() => navigate(`/details/${selectedTemplateId || ""}`)}
+              className="text-blue-500 cursor-pointer hover:underline"
+            >
+              Continuez sans importer vos informations
+            </span>.
+          </p>
+        </>
+      )}
     </div>
   );
 };

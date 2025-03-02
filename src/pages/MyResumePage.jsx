@@ -1,91 +1,96 @@
-import React, { useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useEffect, useState, useRef } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import ResumePreview from '../components/ResumePreview';
 import { FaArrowLeft, FaDownload } from 'react-icons/fa';
-import html2pdf from 'html2pdf.js';
+import html2canvas from 'html2canvas';
+import { jsPDF } from 'jspdf';
 
 const MyResumePage = () => {
   const navigate = useNavigate();
-  const resumeRef = useRef(null);
-  const [isDownloading, setIsDownloading] = useState(false);
+  const location = useLocation();
+  const [resumeData, setResumeData] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const resumeRef = useRef();
 
-  const handleDownloadPDF = () => {
-    if (resumeRef.current) {
-      setIsDownloading(true);
-
-      const options = {
-        margin: 0, // Marges (haut, droite, bas, gauche)
-        filename: 'CV.pdf',
-        image: { type: 'PNG', quality: 1 },
-        html2canvas: {
-          scale: 2, // Augmente la qualité du rendu
-          useCORS: true, // Autorise les ressources externes
-        },
-      };
-
-      // Génération du PDF
-      html2pdf()
-        .set(options)
-        .from(resumeRef.current)
-        .save()
-        .then(() => {
-          console.log('PDF téléchargé avec succès.');
-        })
-        .catch((error) => {
-          console.error('Erreur lors de la génération du PDF:', error);
-        })
-        .finally(() => {
-          setIsDownloading(false);
-        });
+  useEffect(() => {
+    if (location.state?.resumeData) {
+      setResumeData(location.state.resumeData);
+    } else {
+      navigate('/');
     }
+  }, [location, navigate]);
+
+  const downloadAsPDF = async () => {
+    if (!resumeRef.current) return;
+    setIsLoading(true);
+  
+    const canvas = await html2canvas(resumeRef.current, {
+      scale: 2, // Augmente la qualité du rendu
+      useCORS: true // Pour éviter les problèmes avec les images
+    });
+  
+    const imgData = canvas.toDataURL('image/png');
+  
+    const pdf = new jsPDF('p', 'mm', 'a4');
+  
+    const pdfWidth = pdf.internal.pageSize.getWidth(); // Largeur de la page A4
+    const pdfHeight = pdf.internal.pageSize.getHeight(); // Hauteur de la page A4
+  
+    const imgWidth = pdfWidth; // Remplir toute la largeur du PDF
+    const imgHeight = (canvas.height * imgWidth) / canvas.width; // Garder les proportions
+  
+    let y = 0;
+  
+    while (y < imgHeight) {
+      pdf.addImage(imgData, 'PNG', 0, -y, imgWidth, imgHeight);
+      
+      y += pdfHeight; // Passer à la section suivante
+      if (y < imgHeight) {
+        pdf.addPage();
+      }
+    }
+  
+    pdf.save('Mon_CV.pdf');
+    setIsLoading(false);
   };
+  
 
   return (
-    <div className="resume-page-container">
-      <h1 className="text-2xl sm:text-3xl font-bold text-center text-gray-800 mb-6 px-4">
+    <div className="container mx-auto py-8 px-4">
+      <h1 className="text-2xl sm:text-3xl font-bold text-center text-gray-800 mb-6">
         Aperçu de votre CV
       </h1>
 
-      {/* Conteneur pour le CV */}
-      <div
-        ref={resumeRef}
-         
-      >
-        <ResumePreview />
+      <div ref={resumeRef} id="resume-preview" className="bg-white p-6   max-w-3xl mx-auto ">
+        {resumeData ? <ResumePreview data={resumeData} /> : <p className="text-center text-gray-500">Chargement...</p>}
       </div>
 
-      {/* Boutons d'action */}
-      <div className="actions flex flex-wrap justify-center mt-6 gap-4 px-4">
+      <div className="flex justify-center gap-4 mt-6">
         {/* Bouton Retour */}
         <button
-          onClick={() => navigate('/details/1')}
-          className="flex items-center justify-center w-full sm:w-auto px-4 py-2 bg-blue-500 text-white rounded-md shadow-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 transition duration-200"
+          onClick={() => navigate(-1)}
+          className="flex items-center gap-2 px-4 py-2 sm:px-6 sm:py-3 text-sm sm:text-base text-white bg-gray-500 hover:bg-gray-600 rounded-lg shadow-md transition-all duration-200"
         >
-          <FaArrowLeft className="mr-2" />
-          Retour
+          <FaArrowLeft /> Retour
         </button>
 
-        {/* Bouton Télécharger en PDF */}
+        {/* Bouton Télécharger PDF */}
         <button
-          onClick={handleDownloadPDF}
-          disabled={isDownloading}
-          className={`flex items-center justify-center w-full sm:w-auto px-4 py-2 text-white rounded-md shadow-md transition duration-200 focus:outline-none focus:ring-2 ${
-            isDownloading
-              ? 'bg-gray-400 cursor-not-allowed'
-              : 'bg-green-500 hover:bg-green-600 focus:ring-green-400'
-          }`}
+          onClick={downloadAsPDF}
+          disabled={isLoading}
+          className={`flex items-center gap-2 px-4 py-2 sm:px-6 sm:py-3 text-sm sm:text-base text-white rounded-lg shadow-md transition-all duration-200 ${isLoading ? 'bg-gray-400 cursor-not-allowed' : 'bg-orange-500 hover:bg-orange-600'}`}
         >
-          {isDownloading ? (
-            'Téléchargement...'
+          {isLoading ? (
+            <>
+              <FaDownload className="animate-spin" /> Génération en cours...
+            </>
           ) : (
             <>
-              <FaDownload className="mr-2" />
-              Télécharger en PDF
+              <FaDownload /> Télécharger PDF
             </>
           )}
         </button>
       </div>
-
     </div>
   );
 };
