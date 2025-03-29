@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CV</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div id="cv" class="container">
+        <div class="header">
+            <div class="img-area">
+                <img class="profile-img" src="{{profileImg}}" alt="" crossOrigin="anonymous">
+            </div>
+            <h1 class="profile-name"></h1>
+            <h3>{{profileTitle}}</h3>
+        </div>
+
+        <div class="main">
+            <div class="left">
+                <h2>Informations Personnelles</h2>
+                <p><strong>Nom:</strong> {{profileName}}</p>
+                <p><strong>Email:</strong> {{email}}</p>
+                <p><strong>Téléphone:</strong>{{phone}}</p>
+                <p><strong>Adresse:</strong>{{address}}</p>
+                <h2>Compétences</h2>
+                <ul>
+                    {{skillsList}}
+                </ul>
+                <h2>Formations Académiques</h2>
+                {{educationList}}
+            </div>
+
+            <div class="right">
+                <h2>Expériences Professionnelles</h2>
+                {{experienceList}}
+                <h2>Langues</h2>
+                <ul>
+                {{languagesList}}
+                </ul>
+
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -9,8 +9,7 @@ const ImportPage = () => {
   const [linkedinUrl, setLinkedinUrl] = useState("");
 
   const CLIENT_ID = "78ke6wzr8aa96y";
-  const REDIRECT_URI = "https://generate-cv-seven.vercel.app/callback";
-  const STATE = "random_string";
+  const REDIRECT_URI = "https://generate-cv-seven.vercel.app/callback";   
   const SCOPE = "openid profile email w_member_social";
 
   useEffect(() => {
@@ -34,7 +33,7 @@ const ImportPage = () => {
       setLoading(true);
       exchangeCodeForToken(codeFromUrl);
 
-      // 🔄 Mise à jour de l'URL pour éviter de stocker l'ancien code
+      //    Mise à jour de l'URL pour éviter de stocker l'ancien code
       const newUrl = window.location.origin + window.location.pathname;
       window.history.replaceState({}, document.title, newUrl);
     }

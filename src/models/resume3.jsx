@@ -17,7 +17,7 @@ const Resume3 = ({ personalInfo, experiences, education, skills, languages, inte
         {/* Colonne droite (informations) */}
         <div className="w-2/3 p-2">
           <div className="flex-1 h-full border-t-[8px] border-r-[8px] border-b-[8px] border-l-0 border-white bg-[#19909e] -ml-2 p-2">
-            <h1 className="text-[1.5rem] font-bold text-white">{personalInfo.lastName} {personalInfo.firstName}</h1>
+            <h1 className="text-[1.5rem] font-bold text-white">{personalInfo.lastName} {personalInfo.firstName}</h1> 
             <p className="text-[0.6rem] text-white break-words">{personalInfo?.email}</p>
             <p className="text-[0.6rem] text-white break-words">{personalInfo?.phone}</p>
             <p className="text-[0.6rem] text-white break-words">{personalInfo?.address}</p>
