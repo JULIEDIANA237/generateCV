@@ -98,8 +98,7 @@ const injectModel1 = (template, resumeData) => {
       .replace("{{languagesList}}", (resumeData.languages || []).map(lang => `
         <li class="skill-item">${lang.title}
           <span class="stars">
-            ${'<i class="fas fa-star"></i>'.repeat(lang.level)}
-            ${'<i class="far fa-star"></i>'.repeat(5 - lang.level)}
+          ${getStars(lang.level)}
           </span>
         </li>
       `).join(''))
