@@ -10,66 +10,79 @@ const getLevelPercentage = (level) => {
   }
 };
 
-const getStars = (level) => {
-    return Array(5)
-      .fill(0)
-      .map((_, index) => index < level 
-        ? '<i class="fas fa-star"></i>'  // Étoile pleine pour le niveau atteint
-        : '<i class="far fa-star"></i>'  // Étoile vide pour le reste
-      )
-      .join('');
-  };
-  
+const getLevelPercentageSkill = (level) => {
+  // Par exemple, si le niveau est sur 5, on renvoie le pourcentage correspondant
+  return level * 20;
+};
+
+function formatDateRange(start, end) {
+  const months = [
+    "janv.", "févr.", "mars", "avr.", "mai", "juin",
+    "juil.", "août", "sept.", "oct.", "nov.", "déc."
+  ];
+
+  function parseDate(dateStr) {
+    if (!dateStr || dateStr.toLowerCase() === "ce jour") {
+      return "ce jour";
+    }
+    const date = new Date(dateStr);
+    const month = months[date.getMonth()];
+    const year = date.getFullYear();
+    return `${month} ${year}`;
+  }
+
+  return `de ${parseDate(start)} à ${parseDate(end)}`;
+}
+
 
 
 const injectModel1 = (template, resumeData) => {
-    return template
-      .replace("{{profileName}}", `${resumeData.personalInfo?.lastName} ${resumeData.personalInfo?.firstName}`)
-      .replace("{{profileTitle}}", resumeData.personalInfo?.title || '')
-      .replace("{{profileDescription}}", resumeData.personalInfo?.description || '')
-      .replace("{{profileImg}}", resumeData.personalInfo?.image || '')
-      .replace("{{phone}}", resumeData.personalInfo?.phone || '')
-      .replace("{{address}}", resumeData.personalInfo?.address || '')
-      .replace("{{email}}", resumeData.personalInfo?.email || '')
-      .replace("{{educationList}}", resumeData.education.map(edu => `
-        <li>
-          <h5>${edu.startDate ? new Date(edu.startDate).getFullYear() : "Non spécifié"} / ${edu.endDate ? new Date(edu.endDate).getFullYear() : "Non spécifié"}</h5>
-          <h4>${edu.degree}</h4>
-          <h4>${edu.institution}</h4>
-        </li>
+  return template
+    .replace("{{profileName}}", `${resumeData.personalInfo?.lastName} ${resumeData.personalInfo?.firstName}`)
+    .replace("{{profileTitle}}", resumeData.personalInfo?.title || '')
+    .replace("{{profileDescription}}", resumeData.personalInfo?.description || '')
+    .replace("{{profileImg}}", resumeData.personalInfo?.image || '')
+    .replace("{{phone}}", resumeData.personalInfo?.phone || '')
+    .replace("{{address}}", resumeData.personalInfo?.address || '')
+    .replace("{{email}}", resumeData.personalInfo?.email || '')
+    .replace("{{educationList}}", resumeData.education.map(edu => `
+      <p><strong>${edu.degree}</strong><br>
+        <a href="#">${edu.institution}</a> <span class="date">${formatDateRange(edu.startDate, edu.endDate)}</span></p>
       `).join(''))
-      .replace("{{experienceList}}", (resumeData.experiences || []).map(exp => `
-        <div class="box">
-          <div class="year_company">
-            <h5>${exp.startDate} / ${exp.endDate}</h5>
-            <h5>${exp.company}</h5>
-          </div>
-          <div class="text">
-            <h4>${exp.position}</h4>
-            <ul>
-              ${(exp.tasks || []).map(task => `<li>• ${task}</li>`).join('')}
-            </ul>
-          </div>
-        </div>
+    .replace("{{experienceList}}", (resumeData.experiences || []).map(exp => `
+      <div class="job">
+          <h3>${exp.position}<span class="date">${formatDateRange(exp.startDate, exp.endDate)}</span></h3>
+          <p><a href="#">${exp.company}</a></p>
+          <ul>
+        ${(exp.tasks || []).map(task => `<li style="margin-left: 30px;">• ${task}</li>`).join('')}
+        </ul>
+      </div>
       `).join(''))
-      .replace("{{interestsList}}", (resumeData.interests || []).map(interest => `
-        <li><i class="fa fa-check"></i> ${interest.title}</li> 
+    .replace("{{interestsList}}", (resumeData.interests || []).map(interest => `
+      <ul><li>${interest.title}</li></ul>
       `).join(''))
       .replace("{{languagesList}}", resumeData.languages.map(lang => `
-        <li>
-          <span class="text">${lang.title}</span>
-          <div class="percent" style="width:${getLevelPercentage(lang.level)}%;"></div> 
-        </li>
-      `).join(''))
-      .replace("{{skillsList}}", resumeData.skills.map(skill => `
-        <div class="box">
-          <h4>${skill.title}</h4>
-          <div class="percent">
-            <div style="width:${skill.level * 20}%;"></div>
-          </div>
+        <div class="language-item">
+          <span>${lang.title}</span>
+          <span class="dots">
+            ${Array(5).fill(0).map((_, i) => `
+                <span class="dot ${i < getLevelPercentage(lang.level) / 20 ? "full" : ""}"></span>
+              `).join('')}
+          </span>
         </div>
-      `).join(''));
-  };
+      `).join(''))
+      
+    .replace("{{skillsList}}", resumeData.skills.map(skill => `
+      <div class="skill-item">
+          <span>${skill.title}</span>
+          <span class="dots">
+            ${Array(5).fill(0).map((_, i) => `
+              <span class="dot ${i < skill.level ? "full" : ""}"></span>
+            `).join('')}
+          </span>
+      </div>
+    `).join(''));
+};
   
   const injectModel2 = (template, resumeData) => {
     return template
@@ -81,32 +94,46 @@ const injectModel1 = (template, resumeData) => {
     .replace("{{address}}", resumeData.personalInfo?.address || '')
     .replace("{{email}}", resumeData.personalInfo?.email || '')
       .replace("{{experienceList}}", resumeData.experiences.map(exp => `
-        <h3 class="title">${exp.company}</h3>
-        <p><strong>Poste:</strong> ${exp.position}</p>
-        <p><strong>Durée:</strong> ${exp.startDate} / ${exp.endDate}</p>
-        <ul>
-          ${exp.tasks.map(task => `<li>${task}</li>`).join('')}
-        </ul>
+        <div class="job-header">
+            <p class="date">${formatDateRange(exp.startDate, exp.endDate)}</p>
+            <div class="job-details">
+                <p class="job-title"><strong>${exp.position}</strong></p>
+                <p class="job-company">${exp.company}</p>
+                <ul class="job-tasks">
+                ${exp.tasks.map(task => `<li>• ${task}</li>`).join('')}
+              </ul>
+            </div>
+        </div> 
       `).join(''))
       .replace("{{educationList}}", (resumeData.education || []).map(edu => `
-        <h3>${edu.degree}</h3>
-        <p>${edu.institution}, ${edu.startDate ? new Date(edu.startDate).getFullYear() : "Non spécifié"} / ${edu.endDate ? new Date(edu.endDate).getFullYear() : "Non spécifié"}</p> <br>
+        <div class="job-header">
+        <p class="date">${formatDateRange(edu.startDate, edu.endDate)}</p>
+        <div class="job-details">
+            <p class="job-title"><strong>${edu.degree}</strong></p>
+            <p class="job-company">${edu.institution}</p>
+        </div>
+      </div> 
       `).join(''))
       .replace("{{interestsList}}", (resumeData.interests || []).map(interest => `
-        <li>${interest.title}</li>
+        <ul class="interet-list">
+          <li>
+             
+             ${interest.title} 
+          </li>
+        </ul>
       `).join(''))
       .replace("{{languagesList}}", (resumeData.languages || []).map(lang => `
-        <li class="skill-item">${lang.title}
-          <span class="stars">
-          ${getStars(lang.level)}
-          </span>
+        <li>
+              <span class="language-name">${lang.title}</span>
+              <span class="language-level">${lang.level}</span>
         </li>
       `).join(''))
       .replace("{{skillsList}}", resumeData.skills.map(skill => `
-        <li class="skill-item">${skill.title}
-          <span class="stars">
-            ${getStars(skill.level)}
-          </span>
+        <li>
+              <span class="quality-name">${skill.title}</span>
+              <div class="progress-bar">
+                  <div class="progress-fill" style="width:${skill.level * 20}%;"></div>
+              </div>
         </li>
       `).join(''));;
   };
@@ -122,42 +149,36 @@ const injectModel1 = (template, resumeData) => {
     .replace("{{address}}", resumeData.personalInfo?.address || '')
     .replace("{{email}}", resumeData.personalInfo?.email || '')
     .replace("{{educationList}}", resumeData.education.map(edu => `
-      <li>
-        <h5>${edu.startDate ? new Date(edu.startDate).getFullYear() : "Non spécifié"} / ${edu.endDate ? new Date(edu.endDate).getFullYear() : "Non spécifié"}</h5>
-        <h4>${edu.degree}</h4>
-        <h4>${edu.institution}</h4>
-      </li>
+      <div class="entry">
+          <strong>${edu.degree}</strong>
+          <span class="date">${formatDateRange(edu.startDate, edu.endDate)}</span><br>
+          ${edu.institution}
+      </div>
     `).join(''))
     .replace("{{experienceList}}", (resumeData.experiences || []).map(exp => `
-      <div class="box">
-        <div class="year_company">
-          <h5>${exp.startDate} / ${exp.endDate}</h5>
-          <h5>${exp.company}</h5>
-        </div>
-        <div class="text">
-          <h4>${exp.position}</h4>
-          <ul>
-            ${(exp.tasks || []).map(task => `<li>• ${task}</li>`).join('')}
+      <div class="entry">
+          <strong>${exp.position}</strong>
+          <span class="date">${formatDateRange(exp.startDate, exp.endDate)}</span><br>
+          ${exp.company}
+          <ul class="tasks">
+             ${(exp.tasks || []).map(task => `<li style="margin-left: -20px;">• ${task}</li>`).join('')}
           </ul>
-        </div>
       </div>
     `).join(''))
     .replace("{{interestsList}}", (resumeData.interests || []).map(interest => `
-      <li><i class="fa fa-check"></i> ${interest.title}</li> 
+      <ul class="list">
+          <li>${interest.title}</li>
+      </ul>
     `).join(''))
     .replace("{{languagesList}}", resumeData.languages.map(lang => `
-      <li>
-        <span class="text">${lang.title}</span>
-        <div class="percent" style="width:${getLevelPercentage(lang.level)}%;"></div> 
-      </li>
+      <ul class="skills">
+          <li>${lang.title} <div class="bar full" style="width:${getLevelPercentage(lang.level)}%;"></div></li>
+      </ul>
     `).join(''))
     .replace("{{skillsList}}", resumeData.skills.map(skill => `
-      <div class="box">
-        <h4>${skill.title}</h4>
-        <div class="percent">
-          <div style="width:${skill.level * 20}%;"></div>
-        </div>
-      </div>
+      <ul class="skills">
+          <li>${skill.title} <div class="bar full" style="width:${skill.level * 20}%;"></div></li>
+      </ul> 
     `).join(''));
   };
   

@@ -6,8 +6,9 @@ import Resume3 from '../models/resume3'
 const TestResume = () => {
   return (
     <div>
-      <Resume2/>
       <Resume1/>
+      <Resume2/>
+      
       <Resume3/>
     </div>
 

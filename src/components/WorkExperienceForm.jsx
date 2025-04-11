@@ -89,7 +89,7 @@ const WorkExperienceForm = () => {
           </label>
           <input
             type="date"
-            value={experience.endDate !== "Présent" ? experience.endDate : ""}
+            value={experience.endDate !== "ce jour" ? experience.endDate : ""}
             onChange={(e) => handleChange(index, "endDate", e.target.value)}
             className="w-full border border-gray-300 rounded-lg p-1.5 sm:p-2 text-sm"
             disabled={experience.endDate === "Présent"}
@@ -97,13 +97,13 @@ const WorkExperienceForm = () => {
           <label className="flex items-center text-sm text-gray-700 mt-2">
             <input
               type="checkbox"
-              checked={experience.endDate === "Présent"}
+              checked={experience.endDate === "ce jour"}
               onChange={(e) =>
-                handleChange(index, "endDate", e.target.checked ? "Présent" : "")
+                handleChange(index, "endDate", e.target.checked ? "ce jour" : "")
               }
               className="mr-2"
             />
-            jusqu'à présent
+            jusqu'à ce jour
           </label>
         </div>
 

@@ -1,50 +1,72 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CV</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CV</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-    <div id="cv" class="container">
-        <div class="header">
-            <div class="img-area">
-                <img class="profile-img" src="{{profileImg}}" alt="" crossOrigin="anonymous">
-            </div>
-            <h1 class="profile-name"></h1>
-            <h3>{{profileTitle}}</h3>
-        </div>
+  <div class="cv-container">
+    <!-- En-tête avec le nom (centré, couleur de fond) -->
+    <header class="cv-header">
+      <h1>{{profileName}}</h1>
+      <h2>{{profileTitle}}</h2>
+    </header>
+    
+    <!-- Section Informations personnelles -->
+    <section class="cv-section personal-info">
+      <h2>Informations personnelles</h2>
+      <div class="info-details">
+        <p><strong>Email :</strong> {{email}}</p>
+        <p><strong>Téléphone :</strong> {{phone}}</p>
+        <p><strong>Adresse :</strong> {{address}}</p>
+      </div>
+    </section>
+    
+    <!-- Section Profil -->
+    <section class="cv-section profile">
+      <h2>Profil</h2>
+      <p>{{profileDescription}}</p>
+    </section>
+    
+    <!-- Section Expérience professionnelle -->
+    <section class="cv-section experience">
+      <h2>Expérience professionnelle</h2>
+      <div class="job">
+        {{experienceList}} 
+      </div>
+    </section>
+    
+    <!-- Section Formation -->
+    <section class="cv-section formation">
+      <h2>Formation</h2>
+      {{educationList}}
+    </section>
+    
+    <!-- Section competences -->
+    <section class="cv-section competences">
+      <h2>Compétences</h2>
+      <ul class="qualities-list">
+        {{skillsList}}
+      </ul>
+  </section>
+  
 
-        <div class="main">
-            <div class="left">
-                <h2>Informations Personnelles</h2>
-                <p><strong>Nom:</strong> {{profileName}}</p>
-                <p><strong>Email:</strong> {{email}}</p>
-                <p><strong>Téléphone:</strong>{{phone}}</p>
-                <p><strong>Adresse:</strong>{{address}}</p>
-                <h2>Compétences</h2>
-                <ul>
-                    {{skillsList}}
-                </ul>
-                <h2>Formations Académiques</h2>
-                {{educationList}}
-
-                <h2>Langues</h2>
-                <ul>
-                {{languagesList}}
-                </ul>
-            </div>
-
-            <div class="right">
-                <h2>Expériences Professionnelles</h2>
-                {{experienceList}}
-                
-                <h2>Centre d'intéret</h2>
-                <ul>{{interestsList}}</ul>
-            </div>
-        </div>
-    </div>
+    <!-- Section Langue -->
+    <section class="cv-section langue">
+      <h2>Langues</h2>
+      <ul class="language-list">
+        {{languagesList}}
+      </ul>
+  </section>
+      
+    <!-- Section Qualités -->
+    <section class="cv-section interet">
+      <h2>Centre d'intérêt</h2>
+      {{interestsList}}
+  </section>
+ 
+  </div>
 </body>
 </html>

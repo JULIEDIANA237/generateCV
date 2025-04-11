@@ -1,152 +1,115 @@
 import React from "react";
+import image from '../assets/image.jpg'
 
-const Resume3 = ({ personalInfo, experiences, education, skills, languages, interests }) => {
-  return (
-    <div className="flex flex-col items-center justify-center h-screen mx-auto py-8 px-4 max-w-[700px]">
-      {/* En-tête */}
-      <div className="flex w-full">
-        {/* Colonne gauche (photo) */}
-        <div className="w-1/3 p-2 bg-[#282831] flex justify-center items-end">
-          <div className="flex-1 -mr-2 h-full border-t-[8px] border-b-[8px] border-l-[8px] border-r-0 border-white bg-[#19909e] flex justify-center p-2">
-            <div
-              className="w-[100px] h-[100px] rounded-full bg-white aspect-square bg-cover"
-              style={{ backgroundImage: `url(${personalInfo?.image || ''})` }}
-            ></div>
-          </div>
-        </div>
-        {/* Colonne droite (informations) */}
-        <div className="w-2/3 p-2">
-          <div className="flex-1 h-full border-t-[8px] border-r-[8px] border-b-[8px] border-l-0 border-white bg-[#19909e] -ml-2 p-2">
-            <h1 className="text-[1.5rem] font-bold text-white">{personalInfo.lastName} {personalInfo.firstName}</h1> 
-            <p className="text-[0.6rem] text-white break-words">{personalInfo?.email}</p>
-            <p className="text-[0.6rem] text-white break-words">{personalInfo?.phone}</p>
-            <p className="text-[0.6rem] text-white break-words">{personalInfo?.address}</p>
-          </div>
-        </div>
-      </div>
+const Resume3 = () => {
+    return(
+    <div style={{flex:1,display:"flex",margin:'0 auto',height:'100vh',flexDirection:'column',justifyContent:'center',maxWidth:700,alignItems:'center'}}>
+        <div style={{flex:0.2,width:'100%',display:'flex'}}>
+            <div style={{flex:0.35,padding:8,backgroundColor:'#282831',display:'flex',justifyContent:'center',alignItems:'flex-end'}}>
+                <div style={{border:'1px solid white',flex:1,marginRight:-8,height:'100%',borderWidth:'8px 0 8px 8px',backgroundColor:'#19909e',display:'flex',justifyContent:'center',padding:8}}>
+                    <div style={{width:100,height:100,borderRadius:50,backgroundColor:'white',aspectRatio: 1, backgroundImage: `url(${image})`,backgroundSize: 'cover'}}>
 
-      {/* Contenu principal */}
-      <div className="flex w-full mt-4">
-        {/* Colonne gauche */}
-        <div className="w-1/3 bg-[#282831] p-2 flex flex-col">
-          {/* Compétences */}
-          <div className="mt-2 flex-1 flex flex-col items-center justify-center">
-            <p className="text-[0.6rem] text-[#b2c1c3] tracking-[1.3px]">Compétences</p>
-            <ul className="text-[0.6rem] text-white">
-            {skills?.map((skill, index) => (
-              <li key={index} className="flex flex-col   mb-2 w-full">
-                <span className="mr-11">{skill.title}</span>
-                <div className="flex">
-                  {[...Array(5)].map((_, i) => (
-                    <span key={i} className={i < skill.level ? "text-yellow-400" : "text-gray-400"}>
-                      ★
-                    </span>
-                  ))}
-                </div>
-              </li>
-            ))}
-            </ul>
-          </div>
-
-          {/* Langues */}
-          <div className="mt-2 flex-1 flex flex-col items-center justify-center    w-full">
-            <p className="text-[0.6rem] text-[#b2c1c3] tracking-[1.3px] mr-10">Langues</p>
-            <ul className="text-[0.6rem] text-white  w-full ">
-              {languages?.map((language, index) => {
-                // Convertir le niveau en pourcentage
-                const levelMap = {
-                  "Débutant": 25,
-                  "Intermédiaire": 50,
-                  "Avancé": 75,
-                  "Courant": 100
-                };
-                const progress = levelMap[language.level] || 0; // Valeur par défaut à 0 si non trouvée
-
-                return (
-                  <li key={index} className="flex flex-col items-center text-center mb-2 w-full">
-                    <span className="font-bold mr-14">{language.title}</span>
-                    <div className="w-3/5 bg-gray-700 rounded-full h-2 mt-1 ml-7">
-                      <div 
-                        className="bg-[#19909e] h-2 rounded-full "
-                        style={{ width: `${progress}%` }}
-                      ></div>
                     </div>
-                    
-                  </li>
-                );
-              })}
-            </ul>
-          </div>
-
-          
-          {/* Centres d'intérêt */}
-          <div className="mt-2 flex-1 flex flex-col items-center  justify-center w-full">
-            <p className="text-[0.6rem] text-[#b2c1c3] tracking-[1.3px]  ">Centres d'intérêt</p>
-            <ul className="text-[0.6rem] text-white w-full flex flex-col ml-28 items-start gap-1 mt-1">
-              {interests?.map((interest, index) => (
-                <li key={index} className="flex items-center gap-2">
-                  {/* Petit rectangle bleu comme puce */}
-                  <span className="w-2 h-2 bg-[#19909e] rounded-sm inline-block"></span>
-                  <span className="break-words">{interest.title}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-        </div>
-
-        {/* Colonne droite */}
-        <div className="w-2/3 p-2 flex flex-col">
-          {/* Profil */}
-          <div className="flex-1">
-            <div className="mt-2 flex flex-col items-center justify-center">
-              <div className="w-full bg-[#19909e] py-1 mb-1">
-                <p className="text-white ml-2 text-sm">Profil</p>
-              </div>
-              <p className="text-[0.6rem] break-words">{personalInfo?.description}</p>
+                </div>
             </div>
-          </div>
-
-          {/* Formation */}
-          <div className="flex-1 mt-2">
-            <div className="w-full bg-[#19909e] py-1 mb-1">
-              <p className="text-white ml-2 text-sm">Formation</p>
+            <div style={{flex:0.65,padding:8}}>
+                <div style={{border:'1px solid white',flex:1,height:'100%',borderWidth:'8px 8px 8px 0',backgroundColor:'#19909e',marginLeft:-8,padding:8}}>
+                    <h1 style={{fontSize:'1.5rem',fontWeight:'bold',color:'white'}}>Mika MBA</h1>
+                    <p style={{fontSize:'0.6rem',whiteSpace: 'normal',wordWrap: 'break-word',color:'white'}}>mbachristian58@gmail.com</p>
+                    <p style={{fontSize:'0.6rem',whiteSpace: 'normal',wordWrap: 'break-word',color:'white'}}>+237 672 094 167</p>
+                    <p style={{fontSize:'0.6rem',whiteSpace: 'normal',wordWrap: 'break-word',color:'white'}}>3 ans dexperience</p>
+                    <p style={{fontSize:'0.6rem',whiteSpace: 'normal',wordWrap: 'break-word',color:'white'}}>permis B</p>
+                </div>
             </div>
-            <ul className="text-[0.6rem] break-words">
-              {education?.map((edu, index) => (
-                <li key={index}>
-                  <p className="font-bold">{edu.degree}</p>
-                  <p className="text-[#589d89]">{edu.institution}</p>
-                  <p>{edu.startDate} - {edu.endDate}</p>
-                </li>
-              ))}
-            </ul>
-          </div>
+        </div> 
+        <div style={{flex:0.8,width:'100%',display:'flex'}}>
+            <div style={{flex:35,backgroundColor:'#282831',padding:8,display:'flex',flexDirection:'column'}}>
+                <div style={{marginTop:8,flex:1,display:'flex',justifyContent:'center',alignItems:'center',flexDirection:'column',}}>
+                    <div style={{marginTop:8,flex:1,display:'flex',justifyContent:'center',alignItems:'center',flexDirection:'column',width:'100%'}}>
+                        <div style={{flex:0.2,width:'100%',marginBottom:4}}>
+                            <p style={{color:'#b2c1c3',letterSpacing:1.3}}>Compétences</p>
+                        </div>
+                        <div style={{flex:0.8,width:'100%', overflow: 'hidden',display:'flex',flexDirection:'column'}}>
+                            <p style={{fontSize:'0.6rem',whiteSpace: 'normal',wordWrap: 'break-word',color:'white'}}>microsoft office</p>
+                            <p style={{fontSize:'0.6rem',whiteSpace: 'normal',wordWrap: 'break-word',color:'white'}}>React Js</p>
+                            <p style={{fontSize:'0.6rem',whiteSpace: 'normal',wordWrap: 'break-word',color:'white'}}>React native</p>
+                        </div>
+                    </div>
+                    <div style={{marginTop:8,flex:1,display:'flex',justifyContent:'center',alignItems:'center',flexDirection:'column',width:'100%'}}>
+                        <div style={{flex:0.2,width:'100%',marginBottom:4}}>
+                            <p style={{color:'#b2c1c3',letterSpacing:1.3}}>Langues</p>
+                        </div>
+                        <div style={{flex:0.8,width:'100%', overflow: 'hidden',display:'flex',flexDirection:'column'}}>
+                            <p style={{fontSize:'0.6rem',whiteSpace: 'normal',wordWrap: 'break-word',color:'white'}}>Anglais</p>
+                            <p style={{fontSize:'0.6rem',whiteSpace: 'normal',wordWrap: 'break-word',color:'white'}}>Francais</p>
+                        </div>
+                    </div>
+                    <div style={{marginTop:8,flex:1,display:'flex',justifyContent:'center',alignItems:'center',flexDirection:'column',width:'100%'}}>
+                        <div style={{flex:0.2,width:'100%',marginBottom:4}}>
+                            <p style={{color:'#b2c1c3',letterSpacing:1.3}}>Centres D'interet</p>
+                        </div>
+                        <div style={{flex:0.8,width:'100%', overflow: 'hidden',display:'flex',flexDirection:'column'}}>
+                            <p style={{fontSize:'0.6rem',whiteSpace: 'normal',wordWrap: 'break-word',color:'white'}}>Anglais</p>
+                            <p style={{fontSize:'0.6rem',whiteSpace: 'normal',wordWrap: 'break-word',color:'white'}}>Francais</p>
+                        </div>
+                    </div>
+                </div>
+                <div style={{flex:0.3}}>
 
-          {/* Expérience Professionnelle */}
-          <div className="flex-1 mt-2">
-            <div className="w-full bg-[#19909e] py-1 mb-1">
-              <p className="text-white ml-2 text-sm">Expérience Professionnelle</p>
-            </div>
-            <ul className="text-[0.6rem] break-words">
-              {experiences?.map((exp, index) => (
-                <li key={index}>
-                  <p className="font-bold">{exp.position}</p>
-                  <p className="text-[#589d89]">{exp.company}</p>
-                  <p>{exp.startDate} - {exp.endDate}</p>
-                  <ul className="ml-4 list-disc">
-                    {exp.tasks?.map((task, idx) => (
-                      <li key={idx}>{task }</li>
-                    ))}
-                  </ul>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-      </div>
+                </div>
+            </div>  
+            <div style={{flex:65, padding:8,display:'flex',flexDirection:'column'}}>
+                <div style={{flex:0.2}}>
+                    <div style={{marginTop:8,flex:1,display:'flex',justifyContent:'center',alignItems:'center',flexDirection:'column',}}>
+                        <div style={{flex:0.2,width:'100%',marginBottom:4,backgroundColor:'#19909e'}}>
+                            <p style={{color:'#fff',marginLeft:8}}>Profile</p>
+                        </div>
+                        <div style={{flex:0.8,width:'100%', overflow: 'hidden',display:'flex',flexDirection:'column'}}>
+                            <p style={{
+                            fontSize: '0.6rem',
+                            whiteSpace: 'normal',
+                            wordWrap: 'break-word'
+                            }}>
+                                Lorem ipsum dolor sit amet, consectetur adipiscing elit.  
+                                Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.  
+                            </p>
+                        </div>
+                    </div>
+                    <div style={{marginTop:8,flex:1,display:'flex',justifyContent:'center',alignItems:'center',flexDirection:'column',}}>
+                        <div style={{flex:0.2,width:'100%',marginBottom:4,backgroundColor:'#19909e'}}>
+                            <p style={{color:'#fff',marginLeft:8}}>Formation</p>
+                        </div>
+                        <div style={{flex:0.8,width:'100%', overflow: 'hidden',display:'flex',flexDirection:'column'}}>
+                            <p style={{
+                            fontSize: '0.6rem',
+                            whiteSpace: 'normal',
+                            wordWrap: 'break-word'
+                            }}>
+                                Lorem ipsum dolor sit amet, consectetur adipiscing elit.  
+                                Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.  
+                            </p>
+                        </div>
+                    </div>
+                    <div style={{marginTop:8,flex:1,display:'flex',justifyContent:'center',alignItems:'center',flexDirection:'column',}}>
+                        <div style={{flex:0.2,width:'100%',marginBottom:4,backgroundColor:'#19909e'}}>
+                            <p style={{color:'#fff',marginLeft:8}}>Experience Professionnelle</p>
+                        </div>
+                        <div style={{flex:0.8,width:'100%', overflow: 'hidden',display:'flex',flexDirection:'column'}}>
+                            <p style={{
+                            fontSize: '0.6rem',
+                            whiteSpace: 'normal',
+                            wordWrap: 'break-word'
+                            }}>
+                                Lorem ipsum dolor sit amet, consectetur adipiscing elit.  
+                                Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.  
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>  
+        </div>         
     </div>
-  );
-};
+    )
+}
 
 export default Resume3;
