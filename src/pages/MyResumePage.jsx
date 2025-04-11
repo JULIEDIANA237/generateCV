@@ -87,7 +87,9 @@ const MyResumePage = () => {
       }
       
   
-      pdf.save("resume.pdf");
+      const fullName = document.getElementById("full-name")?.textContent?.trim() || "resume";
+      pdf.save(`${fullName.replace(/\s+/g, "_").toLowerCase()}.pdf`);
+
     } catch (error) {
       console.error("Erreur PDF avec pagination :", error);
     } finally {
