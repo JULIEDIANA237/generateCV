@@ -62,7 +62,7 @@ const HomePage = () => {
         {templates.map((template) => (
           <div
             key={template.id}
-            className="transition-all transform hover:scale-105 hover:shadow-2xl rounded-lg overflow-hidden cursor-pointer"
+            className="transition-all transform hover:scale-105   overflow-hidden cursor-pointer"
             onClick={() => handleUseTemplate(template.id)}
           >
             <TemplateCard image={template.image} />
